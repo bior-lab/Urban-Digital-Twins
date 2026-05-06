@@ -12,11 +12,11 @@ window.SG_ENERGY_MAP_CONFIG = {
       sourceLayer: ""
     },
     weather: {
-      url: "",
+      url: "mapbox://jpyjpy.0yv50dg3",
       sourceLayer: ""
     },
     buildingOverview: {
-      url: "",
+      url: "mapbox://jpyjpy.b7q5jled",
       sourceLayer: ""
     }
   }
