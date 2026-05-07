@@ -313,6 +313,7 @@
 
           if (targetId === "microclimate") {
             setTimeout(activateMicroclimateGridMode, 100);
+            setTimeout(setupMicroclimateDefaults, 180);
           }
 
           if (targetId === "energy") {
@@ -406,6 +407,61 @@
         }
       }
 
+      function reorderWeatherButtons() {
+        const container = document.getElementById("weatherButtons");
+        if (!container) return;
+
+        const order = ["temperature", "solar", "wind", "rh"];
+        const buttons = Array.from(container.querySelectorAll("button"));
+
+        const orderedButtons = order
+          .map((label) =>
+            buttons.find((button) => button.textContent.trim().toLowerCase() === label)
+          )
+          .filter(Boolean);
+
+        if (orderedButtons.length === 0) return;
+
+        const currentOrder = buttons.map((button) => button.textContent.trim().toLowerCase()).join("|");
+        const targetOrder = orderedButtons.map((button) => button.textContent.trim().toLowerCase()).join("|");
+
+        if (currentOrder === targetOrder) return;
+
+        orderedButtons.forEach((button) => {
+          container.appendChild(button);
+        });
+      }
+
+      function activateDefaultMicroclimateMetric() {
+        const microclimatePanel = document.getElementById("microclimate");
+        const weatherButtons = document.getElementById("weatherButtons");
+        const periodButtons = document.getElementById("periodButtons");
+
+        if (!microclimatePanel || !microclimatePanel.classList.contains("active")) return;
+        if (!weatherButtons || !periodButtons) return;
+
+        const temperatureButton = Array.from(weatherButtons.querySelectorAll("button")).find((button) => {
+          return button.textContent.trim().toLowerCase() === "temperature";
+        });
+
+        const hotButton = Array.from(periodButtons.querySelectorAll("button")).find((button) => {
+          return button.textContent.trim().toLowerCase() === "hot";
+        });
+
+        if (temperatureButton && !temperatureButton.classList.contains("active")) {
+          temperatureButton.click();
+        }
+
+        if (hotButton && !hotButton.classList.contains("active")) {
+          hotButton.click();
+        }
+      }
+
+      function setupMicroclimateDefaults() {
+        reorderWeatherButtons();
+        activateDefaultMicroclimateMetric();
+      }
+
       const layerModeEnergy = document.getElementById("layerModeEnergy");
       const layerMode = document.getElementById("layerMode");
 
@@ -421,6 +477,7 @@
       window.addEventListener("load", () => {
         setTimeout(activateBuildingMode, 400);
         setTimeout(activateBuildingTypeMetric, 600);
+        setTimeout(reorderWeatherButtons, 700);
       });
 
       document.querySelector('a[href="#buildings"]')?.addEventListener("click", () => {
@@ -430,6 +487,7 @@
 
       document.querySelector('a[href="#microclimate"]')?.addEventListener("click", () => {
         setTimeout(activateMicroclimateGridMode, 100);
+        setTimeout(setupMicroclimateDefaults, 180);
       });
 
       document.querySelector('a[href="#energy"]')?.addEventListener("click", () => {
@@ -456,6 +514,30 @@
         });
 
         energyObserver.observe(energyButtons, {
+          childList: true,
+          subtree: true
+        });
+      }
+
+      const weatherButtons = document.getElementById("weatherButtons");
+      if (weatherButtons) {
+        const weatherObserver = new MutationObserver(() => {
+          setupMicroclimateDefaults();
+        });
+
+        weatherObserver.observe(weatherButtons, {
+          childList: true,
+          subtree: true
+        });
+      }
+
+      const periodButtons = document.getElementById("periodButtons");
+      if (periodButtons) {
+        const periodObserver = new MutationObserver(() => {
+          activateDefaultMicroclimateMetric();
+        });
+
+        periodObserver.observe(periodButtons, {
           childList: true,
           subtree: true
         });
