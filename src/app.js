@@ -1284,8 +1284,21 @@ function initMap(token) {
     zoom: 11.35,
     pitch: 52,
     bearing: -18,
-    antialias: true
+    antialias: true,
+
+    // Turn off the default attribution so we can add a custom one below
+    attributionControl: false
   });
+
+  state.map.addControl(
+    new mapboxgl.AttributionControl({
+      compact: false,
+      customAttribution:
+        '<a class="bior-attribution" href="https://maomaohu.net/" target="_blank" rel="noopener noreferrer">🦁 NUS BIOR Lab</a>'
+    }),
+    "bottom-right"
+  );
+
   state.map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), "top-right");
   state.map.addControl(new mapboxgl.ScaleControl({ maxWidth: 120, unit: "metric" }), "bottom-left");
 
