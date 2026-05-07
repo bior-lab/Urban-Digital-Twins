@@ -958,3 +958,10 @@ input[type="range"] {
     transform: translateY(0);
   }
 }
+
+.what-how-section {
+  padding: 14px 14px 16px;
+  border: 1px solid rgba(0, 61, 124, 0.12);
+  border-radius: 10px;
+  background: rgba(0, 61, 124, 0.035);
+}
