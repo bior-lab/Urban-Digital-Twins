@@ -1280,13 +1280,14 @@ function initMap(token) {
   state.map = new mapboxgl.Map({
     container: "map",
     style: CONFIG.styleUrl || "mapbox://styles/mapbox/light-v11",
-    center: [103.8198, 1.3521],
-    zoom: 11.35,
-    pitch: 52,
-    bearing: -18,
-    antialias: true,
 
-    // Turn off the default attribution so we can add a custom one below
+    // More detailed 3D view
+    center: [103.82, 1.29],
+    zoom: 14.1,
+    pitch: 50,
+    bearing: -28,
+
+    antialias: true,
     attributionControl: false
   });
 
