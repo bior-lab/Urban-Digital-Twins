@@ -68,11 +68,41 @@ button:hover {
   background: rgba(0, 61, 124, 0.06);
 }
 
+/* Active state: NUS blue background, white text */
 button.active {
-  border-color: rgba(239, 124, 0, 0.8);
+  border-color: var(--nus-blue);
+  background: var(--nus-blue);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 6px 16px rgba(0, 61, 124, 0.18);
+}
+
+button.active:hover {
+  border-color: var(--nus-blue-dark);
+  background: var(--nus-blue-dark);
+  color: #ffffff;
+}
+
+/* Add orange left bar only for stacked buttons, such as Energy Use */
+.button-stack button.active {
+  position: relative;
+  overflow: hidden;
+  padding-left: 18px;
+}
+
+.button-stack button.active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
   background: var(--nus-orange);
-  color: var(--nus-blue);
-  font-weight: 650;
+}
+
+/* Keep segmented active buttons clean without the left bar */
+.segmented button.active {
+  color: #ffffff;
 }
 
 input,
@@ -587,6 +617,43 @@ input[type="range"] {
   border-radius: 0;
 }
 
+/* Brand logo and title */
+.brand-top {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.bior-logo {
+  display: block;
+  width: 500px;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.brand-title {
+  margin: 0;
+  line-height: 1.05;
+}
+
+.title-highlight {
+  display: inline-block;
+  color: var(--nus-orange);
+  font-size: clamp(24px, 2.8vw, 40px);
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.title-main {
+  display: inline-block;
+  color: var(--nus-blue);
+  font-size: clamp(20px, 2.1vw, 30px);
+  font-weight: 600;
+  line-height: 1.12;
+}
+
 /* Medium screens */
 @media (max-width: 1200px) {
   :root {
@@ -604,6 +671,10 @@ input[type="range"] {
 
   .brand h1 {
     font-size: clamp(22px, 2.3vw, 30px);
+  }
+
+  .bior-logo {
+    width: 420px;
   }
 }
 
@@ -683,6 +754,19 @@ input[type="range"] {
     max-width: none;
   }
 
+  .bior-logo {
+    width: 360px;
+    max-width: 100%;
+  }
+
+  .title-highlight {
+    font-size: clamp(28px, 8vw, 42px);
+  }
+
+  .title-main {
+    font-size: clamp(24px, 6.5vw, 34px);
+  }
+
   .summary-text {
     font-size: 15px;
     line-height: 1.55;
@@ -720,41 +804,4 @@ input[type="range"] {
   .mapboxgl-ctrl-bottom-right {
     right: 8px;
   }
-}
-
-/* Brand logo and title */
-.brand-top {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 18px;
-}
-
-.bior-logo {
-  display: block;
-  width: 500px;
-  max-width: 100%;
-  height: auto;
-  object-fit: contain;
-}
-
-.brand-title {
-  margin: 0;
-  line-height: 1.05;
-}
-
-.title-highlight {
-  display: inline-block;
-  color: #ef7c00; /* NUS Orange */
-  font-size: clamp(24px, 2.8vw, 40px);
-  font-weight: 700;
-  line-height: 1.05;
-}
-
-.title-main {
-  display: inline-block;
-  color: #003d7c; /* NUS Blue */
-  font-size: clamp(20px, 2.1vw, 30px);
-  font-weight: 600;
-  line-height: 1.12;
 }
