@@ -95,14 +95,18 @@
             <p class="summary-text">to be added</p>
           </div>
 
-          <div class="control-block">
-            <label class="control-label" for="layerMode">Spatial resolution</label>
-            <select id="layerMode">
-              <option value="buildings" selected>Individual buildings</option>
-              <option value="grid">Aggregated grid cells (500 m × 500 m)</option>
-              <option value="combined">Individual buildings + aggregated grid cells</option>
-            </select>
-          </div>
+          <!-- Hidden default spatial resolution for app.js compatibility -->
+          <select
+            id="layerMode"
+            class="hidden-control"
+            aria-hidden="true"
+            tabindex="-1"
+            style="display: none;"
+          >
+            <option value="buildings" selected>Individual buildings</option>
+            <option value="grid">Aggregated grid cells (500 m × 500 m)</option>
+            <option value="combined">Individual buildings + aggregated grid cells</option>
+          </select>
 
           <div class="control-block metric-block">
             <span class="control-label">Building metadata</span>
@@ -341,6 +345,39 @@
 
       syncRange("gridOpacity", "gridOpacityMicroclimate");
       syncRange("gridOpacity", "gridOpacityEnergy");
+
+      function activateBuildingTypeMetric() {
+        const container = document.getElementById("buildingMetricButtons");
+        if (!container) return;
+
+        const typeButton = Array.from(container.querySelectorAll("button")).find((button) => {
+          return button.textContent.trim().toLowerCase() === "type";
+        });
+
+        if (typeButton && !typeButton.classList.contains("active")) {
+          typeButton.click();
+        }
+      }
+
+      window.addEventListener("load", () => {
+        setTimeout(activateBuildingTypeMetric, 600);
+      });
+
+      document.querySelector('a[href="#buildings"]')?.addEventListener("click", () => {
+        setTimeout(activateBuildingTypeMetric, 100);
+      });
+
+      const buildingMetricButtons = document.getElementById("buildingMetricButtons");
+      if (buildingMetricButtons) {
+        const observer = new MutationObserver(() => {
+          activateBuildingTypeMetric();
+        });
+
+        observer.observe(buildingMetricButtons, {
+          childList: true,
+          subtree: true
+        });
+      }
     </script>
   </body>
 </html>
