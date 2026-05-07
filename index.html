@@ -247,8 +247,13 @@
           </div>
 
           <div class="control-block metric-block">
-            <span class="control-label">Energy Use</span>
+            <span class="control-label">Energy use (simulation data)</span>
             <div id="energyButtons" class="button-stack"></div>
+          </div>
+
+          <div class="control-block metric-block">
+            <span class="control-label">Energy use (measured data from BCA building energy benchmarks)</span>
+            <div id="measuredEnergyButtons" class="button-stack"></div>
           </div>
 
           <div class="control-block">
@@ -316,6 +321,9 @@
     <script src="src/app.js?v=20260506-hourly"></script>
 
     <script>
+      let isSplittingEnergyButtons = false;
+      let isOrderingWeatherButtons = false;
+
       document.querySelectorAll(".app-nav-item[href^='#']").forEach((item) => {
         item.addEventListener("click", (event) => {
           const targetId = item.getAttribute("href").replace("#", "");
@@ -348,7 +356,8 @@
 
           if (targetId === "energy") {
             setTimeout(activateEnergyBuildingMode, 100);
-            setTimeout(activateFirstEnergyMetric, 150);
+            setTimeout(splitEnergyButtons, 140);
+            setTimeout(activateFirstEnergyMetric, 220);
           }
         });
       });
@@ -425,40 +434,76 @@
 
       function activateFirstEnergyMetric() {
         const energyPanel = document.getElementById("energy");
-        const container = document.getElementById("energyButtons");
+        const simulationContainer = document.getElementById("energyButtons");
 
         if (!energyPanel || !energyPanel.classList.contains("active")) return;
-        if (!container) return;
+        if (!simulationContainer) return;
 
-        const firstEnergyButton = container.querySelector("button");
+        const firstEnergyButton = simulationContainer.querySelector("button");
 
         if (firstEnergyButton && !firstEnergyButton.classList.contains("active")) {
           firstEnergyButton.click();
         }
       }
 
+      function splitEnergyButtons() {
+        if (isSplittingEnergyButtons) return;
+
+        const simulationContainer = document.getElementById("energyButtons");
+        const measuredContainer = document.getElementById("measuredEnergyButtons");
+
+        if (!simulationContainer || !measuredContainer) return;
+
+        isSplittingEnergyButtons = true;
+
+        requestAnimationFrame(() => {
+          const simulationButtons = Array.from(simulationContainer.querySelectorAll("button"));
+          const measuredButtons = Array.from(measuredContainer.querySelectorAll("button"));
+          const allButtons = [...simulationButtons, ...measuredButtons];
+
+          allButtons.forEach((button) => {
+            const label = button.textContent.trim().toLowerCase();
+
+            if (label === "measured eui") {
+              if (button.parentElement !== measuredContainer) {
+                measuredContainer.appendChild(button);
+              }
+            } else {
+              if (button.parentElement !== simulationContainer) {
+                simulationContainer.appendChild(button);
+              }
+            }
+          });
+
+          isSplittingEnergyButtons = false;
+        });
+      }
+
       function reorderWeatherButtons() {
+        if (isOrderingWeatherButtons) return;
+
         const container = document.getElementById("weatherButtons");
         if (!container) return;
 
-        const order = ["temperature", "solar", "wind", "rh"];
-        const buttons = Array.from(container.querySelectorAll("button"));
+        isOrderingWeatherButtons = true;
 
-        const orderedButtons = order
-          .map((label) =>
-            buttons.find((button) => button.textContent.trim().toLowerCase() === label)
-          )
-          .filter(Boolean);
+        requestAnimationFrame(() => {
+          const order = ["temperature", "solar", "wind", "rh"];
+          const buttons = Array.from(container.querySelectorAll("button"));
 
-        if (orderedButtons.length === 0) return;
+          const orderedButtons = order
+            .map((label) =>
+              buttons.find((button) => button.textContent.trim().toLowerCase() === label)
+            )
+            .filter(Boolean);
 
-        const currentOrder = buttons.map((button) => button.textContent.trim().toLowerCase()).join("|");
-        const targetOrder = orderedButtons.map((button) => button.textContent.trim().toLowerCase()).join("|");
+          orderedButtons.forEach((button) => {
+            if (button.parentElement === container) {
+              container.appendChild(button);
+            }
+          });
 
-        if (currentOrder === targetOrder) return;
-
-        orderedButtons.forEach((button) => {
-          container.appendChild(button);
+          isOrderingWeatherButtons = false;
         });
       }
 
@@ -489,7 +534,7 @@
 
       function setupMicroclimateDefaults() {
         reorderWeatherButtons();
-        activateDefaultMicroclimateMetric();
+        setTimeout(activateDefaultMicroclimateMetric, 80);
       }
 
       const layerModeEnergy = document.getElementById("layerModeEnergy");
@@ -507,7 +552,8 @@
       window.addEventListener("load", () => {
         setTimeout(activateBuildingMode, 400);
         setTimeout(activateBuildingTypeMetric, 600);
-        setTimeout(reorderWeatherButtons, 700);
+        setTimeout(reorderWeatherButtons, 800);
+        setTimeout(splitEnergyButtons, 900);
       });
 
       document.querySelector('a[href="#buildings"]')?.addEventListener("click", () => {
@@ -522,7 +568,8 @@
 
       document.querySelector('a[href="#energy"]')?.addEventListener("click", () => {
         setTimeout(activateEnergyBuildingMode, 100);
-        setTimeout(activateFirstEnergyMetric, 150);
+        setTimeout(splitEnergyButtons, 140);
+        setTimeout(activateFirstEnergyMetric, 220);
       });
 
       const buildingMetricButtons = document.getElementById("buildingMetricButtons");
@@ -540,24 +587,24 @@
       const energyButtons = document.getElementById("energyButtons");
       if (energyButtons) {
         const energyObserver = new MutationObserver(() => {
-          activateFirstEnergyMetric();
+          if (isSplittingEnergyButtons) return;
+          splitEnergyButtons();
         });
 
         energyObserver.observe(energyButtons, {
-          childList: true,
-          subtree: true
+          childList: true
         });
       }
 
       const weatherButtons = document.getElementById("weatherButtons");
       if (weatherButtons) {
         const weatherObserver = new MutationObserver(() => {
+          if (isOrderingWeatherButtons) return;
           setupMicroclimateDefaults();
         });
 
         weatherObserver.observe(weatherButtons, {
-          childList: true,
-          subtree: true
+          childList: true
         });
       }
 
@@ -568,8 +615,7 @@
         });
 
         periodObserver.observe(periodButtons, {
-          childList: true,
-          subtree: true
+          childList: true
         });
       }
     </script>
