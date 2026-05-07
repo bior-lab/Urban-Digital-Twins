@@ -9,26 +9,66 @@
     <link rel="apple-touch-icon" href="./icon.png" />
 
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.css" rel="stylesheet" />
+
+    <!-- Font Awesome free icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+
     <link rel="stylesheet" href="src/styles.css" />
   </head>
 
   <body>
     <main id="app">
+      <!-- Left navigation menu -->
+      <nav class="app-nav" aria-label="Main navigation">
+        <a class="app-nav-item active" href="#about">
+          <span class="nav-icon"><i class="fa-solid fa-house"></i></span>
+          <span>About</span>
+        </a>
+
+        <a class="app-nav-item" href="#buildings">
+          <span class="nav-icon"><i class="fa-solid fa-building"></i></span>
+          <span>Buildings</span>
+        </a>
+
+        <a class="app-nav-item" href="#microclimate">
+          <span class="nav-icon"><i class="fa-solid fa-cloud-sun"></i></span>
+          <span>Microclimate</span>
+        </a>
+
+        <a class="app-nav-item" href="#energy">
+          <span class="nav-icon"><i class="fa-solid fa-lightbulb"></i></span>
+          <span>Energy</span>
+        </a>
+
+        <a
+          class="app-nav-item nav-help"
+          href="https://maomaohu.net/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="nav-icon"><i class="fa-solid fa-circle-question"></i></span>
+          <span>Help</span>
+        </a>
+      </nav>
+
       <div id="map"></div>
 
       <section class="panel panel-left" aria-label="Map controls">
-          <div class="brand">
-            <div class="brand-top">
-              <img src="bior_logo.png" alt="BIOR Lab logo" class="bior-logo" />
-            </div>
-
-            <h1 class="brand-title">
-              <span class="title-highlight">Urban Digital Twins:</span><br />
-              <span class="title-main">
-                A Tool for Urban-Scale Microclimate-Informed Building Energy Analysis
-              </span>
-            </h1>
+        <div class="brand" id="about">
+          <div class="brand-top">
+            <img src="bior_logo.png" alt="BIOR Lab logo" class="bior-logo" />
           </div>
+
+          <h1 class="brand-title">
+            <span class="title-highlight">Urban Digital Twins:</span><br />
+            <span class="title-main">
+              A Tool for Urban-Scale Microclimate-Informed Building Energy Analysis
+            </span>
+          </h1>
+        </div>
 
         <div class="control-block">
           <label class="control-label" for="layerMode">Viewing</label>
@@ -48,12 +88,12 @@
           </p>
         </div>
 
-        <div class="control-block metric-block">
+        <div class="control-block metric-block" id="buildings">
           <span class="control-label">Building metadata</span>
           <div id="buildingMetricButtons" class="segmented compact"></div>
         </div>
 
-        <div class="control-block metric-block">
+        <div class="control-block metric-block" id="microclimate">
           <span class="control-label">Weather (WRF results)</span>
           <div id="weatherButtons" class="segmented compact"></div>
         </div>
@@ -74,12 +114,12 @@
           </div>
         </div>
 
-        <div class="control-block metric-block">
+        <div class="control-block metric-block" id="energy">
           <span class="control-label">Energy Use</span>
           <div id="energyButtons" class="button-stack"></div>
         </div>
 
-        <div class="control-block">
+        <div class="control-block" id="searchTools">
           <label class="control-label" for="searchInput">Find building or grid</label>
           <div class="search-row">
             <input id="searchInput" type="search" placeholder="objectid, source id, or grid id" autocomplete="off" />
@@ -141,7 +181,10 @@
         <div class="token-card">
           <p class="eyebrow">Mapbox token required</p>
           <h2>Paste a public access token to start the map</h2>
-          <p>The token is stored only in this browser's local storage. For public deployment, use a URL-restricted Mapbox public token.</p>
+          <p>
+            The token is stored only in this browser's local storage. For public deployment, use a URL-restricted
+            Mapbox public token.
+          </p>
           <input id="tokenInput" type="password" placeholder="Mapbox public access token" autocomplete="off" />
           <div class="token-actions">
             <button id="tokenSave" type="button">Start map</button>
