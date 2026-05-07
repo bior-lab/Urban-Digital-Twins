@@ -2,9 +2,9 @@ const CONFIG = window.SG_ENERGY_MAP_CONFIG || {};
 const TOKEN_STORAGE_KEY = "sg-energy-mapbox-token";
 
 const PERIODS = {
-  hot: { label: "Relative hot (May)", shortLabel: "Hot" },
-  cold: { label: "Relative cold (Dec)", shortLabel: "Cold" },
-  transition: { label: "Transition (Oct)", shortLabel: "Transition" }
+  hot: { label: "Relatively hot season (May)", shortLabel: "Hot" },
+  cold: { label: "Relatively cold season (Dec)", shortLabel: "Cold" },
+  transition: { label: "Transitional season (Oct)", shortLabel: "Transition" }
 };
 
 const WEATHER_VARIABLES = {
@@ -64,16 +64,16 @@ const METRICS = {
     ramp: ["#eef3f7", "#f6de8a", "#f6ae45", "#e66732", "#a8232d"]
   },
   energy_cold: {
-    label: "Energy use - Relative cold (Dec)",
-    shortLabel: "Relative cold (Dec)",
+    label: "Energy use - Relatively cold season (Dec)",
+    shortLabel: "Relatively cold season (Dec)",
     category: "energy",
     unit: "kWh",
     fieldByLayer: { buildings: "energy_total_kwh", grid_500m: "winter_energy_kwh" },
     ramp: ["#e5f3fb", "#9bcfe5", "#53a8c9", "#287da5", "#12496e"]
   },
   energy_hot: {
-    label: "Energy use - Relative hot (May)",
-    shortLabel: "Relative hot (May)",
+    label: "Energy use - Relatively hot season (May)",
+    shortLabel: "Relatively hot season (May)",
     category: "energy",
     unit: "kWh",
     fieldByLayer: { buildings: "energy_total_kwh", grid_500m: "summer_energy_kwh" },
@@ -81,7 +81,7 @@ const METRICS = {
   },
   energy_transition: {
     label: "Energy use - Transition (Oct)",
-    shortLabel: "Transition (Oct)",
+    shortLabel: "Transitional season (Oct)",
     category: "energy",
     unit: "kWh",
     fieldByLayer: { buildings: "energy_total_kwh", grid_500m: "autumn_energy_kwh" },
