@@ -14,6 +14,21 @@ const WEATHER_VARIABLES = {
   solar: { label: "Solar shortwave radiation", shortLabel: "Solar", unit: "W/m2", suffix: "wm2" }
 };
 
+const ENERGY_WEEKLY_RAMP = ["#edf7fb", "#b7dbe8", "#70b6cf", "#2f86b2", "#0d4f78"];
+const ENERGY_DIFFERENCE_RAMP = ["#f7fbff", "#c6dbef", "#6baed6", "#2171b5", "#08306b"];
+
+const ENERGY_SIMULATION_METRICS = [
+  "energy_hot",
+  "energy_cold",
+  "energy_transition",
+  "energy_hot_micro",
+  "energy_cold_micro",
+  "energy_transition_micro",
+  "energy_hot_diff_pct",
+  "energy_cold_diff_pct",
+  "energy_transition_diff_pct"
+];
+
 const METRICS = {
   building_type: {
     label: "Building type",
@@ -64,36 +79,88 @@ const METRICS = {
     ramp: ["#eef3f7", "#f6de8a", "#f6ae45", "#e66732", "#a8232d"]
   },
   energy_cold: {
-    label: "Energy use - Relatively cold season (Dec)",
-    shortLabel: "Relatively cold season (Dec)",
+    label: "Relatively cold season (Dec, non-microclimate)",
+    shortLabel: "Relatively cold season (Dec, non-microclimate)",
     category: "energy",
     unit: "kWh",
-    fieldByLayer: { buildings: "energy_total_kwh", grid_500m: "winter_energy_kwh" },
-    ramp: ["#e5f3fb", "#9bcfe5", "#53a8c9", "#287da5", "#12496e"]
+    fieldByLayer: { buildings: "typical_week_energy_kwh", grid_500m: "winter_energy_kwh" },
+    ramp: ENERGY_WEEKLY_RAMP
   },
   energy_hot: {
-    label: "Energy use - Relatively hot season (May)",
-    shortLabel: "Relatively hot season (May)",
+    label: "Relatively hot season (May, non-microclimate)",
+    shortLabel: "Relatively hot season (May, non-microclimate)",
     category: "energy",
     unit: "kWh",
-    fieldByLayer: { buildings: "energy_total_kwh", grid_500m: "summer_energy_kwh" },
-    ramp: ["#fff3c7", "#f8c766", "#ed8f3a", "#d9572e", "#8f241f"]
+    fieldByLayer: { buildings: "typical_week_energy_kwh", grid_500m: "summer_energy_kwh" },
+    ramp: ENERGY_WEEKLY_RAMP
   },
   energy_transition: {
-    label: "Energy use - Transition (Oct)",
-    shortLabel: "Transitional season (Oct)",
+    label: "Transitional season (Oct, non-microclimate)",
+    shortLabel: "Transitional season (Oct, non-microclimate)",
     category: "energy",
     unit: "kWh",
-    fieldByLayer: { buildings: "energy_total_kwh", grid_500m: "autumn_energy_kwh" },
-    ramp: ["#eef5dc", "#b7d88a", "#72b56e", "#2f8d66", "#11615a"]
+    fieldByLayer: { buildings: "typical_week_energy_kwh", grid_500m: "autumn_energy_kwh" },
+    ramp: ENERGY_WEEKLY_RAMP
   },
-  energy_microclimate: {
-    label: "Energy use with microclimate",
-    shortLabel: "With microclimate",
+  energy_hot_micro: {
+    label: "Relatively hot season (May, microclimate)",
+    shortLabel: "Relatively hot season (May, microclimate)",
     category: "energy",
     unit: "kWh",
-    fieldByLayer: { buildings: "energy_total_kwh", grid_500m: "summer_energy_kwh" },
-    ramp: ["#f2effa", "#c5b6e6", "#9275ca", "#6845a8", "#3d2477"]
+    baseFieldByLayer: { buildings: "typical_week_energy_kwh", grid_500m: "summer_energy_kwh" },
+    pctFieldByLayer: { buildings: "summer_pct", grid_500m: "summer_pct" },
+    statsFieldByLayer: { buildings: "typical_week_energy_kwh", grid_500m: "summer_energy_kwh" },
+    compute: "microclimate_energy",
+    ramp: ENERGY_WEEKLY_RAMP
+  },
+  energy_cold_micro: {
+    label: "Relatively cold season (Dec, microclimate)",
+    shortLabel: "Relatively cold season (Dec, microclimate)",
+    category: "energy",
+    unit: "kWh",
+    baseFieldByLayer: { buildings: "typical_week_energy_kwh", grid_500m: "winter_energy_kwh" },
+    pctFieldByLayer: { buildings: "winter_pct", grid_500m: "winter_pct" },
+    statsFieldByLayer: { buildings: "typical_week_energy_kwh", grid_500m: "winter_energy_kwh" },
+    compute: "microclimate_energy",
+    ramp: ENERGY_WEEKLY_RAMP
+  },
+  energy_transition_micro: {
+    label: "Transitional season (Oct, microclimate)",
+    shortLabel: "Transitional season (Oct, microclimate)",
+    category: "energy",
+    unit: "kWh",
+    baseFieldByLayer: { buildings: "typical_week_energy_kwh", grid_500m: "autumn_energy_kwh" },
+    pctFieldByLayer: { buildings: "autumn_pct", grid_500m: "autumn_pct" },
+    statsFieldByLayer: { buildings: "typical_week_energy_kwh", grid_500m: "autumn_energy_kwh" },
+    compute: "microclimate_energy",
+    ramp: ENERGY_WEEKLY_RAMP
+  },
+  energy_hot_diff_pct: {
+    label: "Difference for relatively hot season (May, Microclimate vs non-microclimate)",
+    shortLabel: "Difference for relatively hot season (May, Microclimate vs non-microclimate)",
+    category: "energy",
+    unit: "%",
+    displayScale: 100,
+    fieldByLayer: { buildings: "summer_pct", grid_500m: "summer_pct" },
+    ramp: ENERGY_DIFFERENCE_RAMP
+  },
+  energy_cold_diff_pct: {
+    label: "Difference for relatively cold season (Dec, Microclimate vs non-microclimate)",
+    shortLabel: "Difference for relatively cold season (Dec, Microclimate vs non-microclimate)",
+    category: "energy",
+    unit: "%",
+    displayScale: 100,
+    fieldByLayer: { buildings: "winter_pct", grid_500m: "winter_pct" },
+    ramp: ENERGY_DIFFERENCE_RAMP
+  },
+  energy_transition_diff_pct: {
+    label: "Difference for transitional season (Oct, Microclimate vs non-microclimate)",
+    shortLabel: "Difference for transitional season (Oct, Microclimate vs non-microclimate)",
+    category: "energy",
+    unit: "%",
+    displayScale: 100,
+    fieldByLayer: { buildings: "autumn_pct", grid_500m: "autumn_pct" },
+    ramp: ENERGY_DIFFERENCE_RAMP
   },
   eui_2023: {
     label: "Measured energy use (EUI 2023)",
@@ -225,7 +292,8 @@ const els = {
   layerMode: document.getElementById("layerMode"),
   buildingMetricButtons: document.getElementById("buildingMetricButtons"),
   weatherButtons: document.getElementById("weatherButtons"),
-  energyButtons: document.getElementById("energyButtons"),
+  energyMetricSelect: document.getElementById("energyMetricSelect"),
+  measuredEnergyButtons: document.getElementById("measuredEnergyButtons"),
   periodButtons: document.getElementById("periodButtons"),
   weatherTimeBlock: document.getElementById("weatherTimeBlock"),
   weatherTime: document.getElementById("weatherTime"),
@@ -282,6 +350,10 @@ function metricDefinition(metric = state.metric) {
   return METRICS[metric] || METRICS.energy_hot;
 }
 
+function metricDisplayScale(metric = state.metric) {
+  return metricDefinition(metric).displayScale || 1;
+}
+
 function weatherField(metric = state.metric, period = state.period) {
   const def = metricDefinition(metric);
   const weather = WEATHER_VARIABLES[def.variable];
@@ -295,17 +367,65 @@ function fieldForLayer(layerName, metric = state.metric) {
   return def.fieldByLayer?.[layerName] || null;
 }
 
+function statsFieldForLayer(layerName, metric = state.metric) {
+  const def = metricDefinition(metric);
+  return def.statsFieldByLayer?.[layerName] || fieldForLayer(layerName, metric);
+}
+
+function hasMetricForLayer(layerName, metric = state.metric) {
+  const def = metricDefinition(metric);
+  if (def.category === "weather") return layerName === "weather_500m";
+  if (def.kind === "categorical") return layerName === "buildings";
+  return Boolean(def.fieldByLayer?.[layerName] || def.baseFieldByLayer?.[layerName]);
+}
+
 function statsLayerForMetric(metric = state.metric) {
   const def = metricDefinition(metric);
   if (def.category === "weather") return "weather_500m";
-  if (state.mode !== "buildings" && def.fieldByLayer?.grid_500m) return "grid_500m";
-  if (state.mode !== "grid" && def.fieldByLayer?.buildings) return "buildings";
+  if (state.mode !== "buildings" && hasMetricForLayer("grid_500m", metric)) return "grid_500m";
+  if (state.mode !== "grid" && hasMetricForLayer("buildings", metric)) return "buildings";
   return "grid_500m";
 }
 
 function metricStats(layerName, metric = state.metric) {
-  const field = fieldForLayer(layerName, metric);
+  const field = statsFieldForLayer(layerName, metric);
   return state.metadata?.layers?.[layerName]?.metrics?.[field] || null;
+}
+
+function metricInputExpression(layerName, metric = state.metric) {
+  const def = metricDefinition(metric);
+  if (def.compute === "microclimate_energy") {
+    const baseField = def.baseFieldByLayer?.[layerName];
+    const pctField = def.pctFieldByLayer?.[layerName];
+    if (!baseField || !pctField) return null;
+    return [
+      "let",
+      "base_value",
+      ["to-number", ["get", baseField], -9999],
+      [
+        "case",
+        ["!=", ["var", "base_value"], -9999],
+        ["*", ["var", "base_value"], ["+", 1, ["to-number", ["get", pctField], 0]]],
+        -9999
+      ]
+    ];
+  }
+  const field = fieldForLayer(layerName, metric);
+  if (!field) return null;
+  return ["case", ["has", field], ["to-number", ["get", field], -9999], -9999];
+}
+
+function metricValueFromProperties(layerName, props, metric = state.metric) {
+  const def = metricDefinition(metric);
+  if (def.kind === "categorical") return props.building_type;
+  if (def.compute === "microclimate_energy") {
+    const base = Number(props[def.baseFieldByLayer?.[layerName]]);
+    const pct = Number(props[def.pctFieldByLayer?.[layerName]]);
+    if (!Number.isFinite(base)) return null;
+    return base * (1 + (Number.isFinite(pct) ? pct : 0));
+  }
+  const field = fieldForLayer(layerName, metric);
+  return field ? props[field] : null;
 }
 
 function weatherVariable(metric = state.metric) {
@@ -528,15 +648,8 @@ async function urlExists(path) {
 
 function buildInterpolateExpression(layerName, metric, fallbackColor = "rgba(144, 154, 162, 0.28)") {
   const def = metricDefinition(metric);
-  const field = fieldForLayer(layerName, metric);
   const stats = metricStats(layerName, metric);
-  if (!field || !stats || !stats.stops?.length) return fallbackColor;
-  const stops = stats.stops;
-  const expression = ["interpolate", ["linear"], ["to-number", ["get", field], stops[0]]];
-  stops.forEach((stop, index) => {
-    expression.push(stop, def.ramp[index] || def.ramp[def.ramp.length - 1]);
-  });
-  return ["case", ["has", field], expression, fallbackColor];
+  return buildColorExpressionFromInput(metricInputExpression(layerName, metric), stats, def.ramp, fallbackColor);
 }
 
 function buildColorExpressionFromInput(inputExpression, stats, ramp, fallbackColor) {
@@ -624,18 +737,38 @@ function createMetricButton(container, key) {
   container.appendChild(button);
 }
 
+function populateMetricSelect(select, keys) {
+  select.innerHTML = "";
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Select weekly simulation layer";
+  placeholder.disabled = true;
+  placeholder.hidden = true;
+  select.appendChild(placeholder);
+  keys.forEach((key) => {
+    const def = METRICS[key];
+    const option = document.createElement("option");
+    option.value = key;
+    option.textContent = def.shortLabel;
+    select.appendChild(option);
+  });
+  select.value = keys.includes(state.metric) ? state.metric : "";
+}
+
 function initMetricButtons() {
   [
     [els.buildingMetricButtons, ["building_type", "height_m"]],
     [els.weatherButtons, ["weather_wind", "weather_temp", "weather_rh", "weather_solar"]],
-    [
-      els.energyButtons,
-      ["energy_cold", "energy_hot", "energy_transition", "energy_microclimate", "eui_2023"]
-    ]
+    [els.measuredEnergyButtons, ["eui_2023"]]
   ].forEach(([container, keys]) => {
+    if (!container) return;
     container.innerHTML = "";
     keys.forEach((key) => createMetricButton(container, key));
   });
+
+  if (els.energyMetricSelect) {
+    populateMetricSelect(els.energyMetricSelect, ENERGY_SIMULATION_METRICS);
+  }
 
   els.periodButtons.innerHTML = "";
   Object.entries(PERIODS).forEach(([key, period]) => {
@@ -660,15 +793,25 @@ function updateMetricButtons() {
   const buttons = [
     ...els.buildingMetricButtons.querySelectorAll("button"),
     ...els.weatherButtons.querySelectorAll("button"),
-    ...els.energyButtons.querySelectorAll("button")
+    ...(els.measuredEnergyButtons ? els.measuredEnergyButtons.querySelectorAll("button") : [])
   ];
   buttons.forEach((button) => {
     const metric = button.dataset.metric;
     const def = metricDefinition(metric);
-    const unavailable = state.mode === "grid" && def.category !== "weather" && !fieldForLayer("grid_500m", metric);
+    const unavailable = state.mode === "grid" && def.category !== "weather" && !hasMetricForLayer("grid_500m", metric);
     button.classList.toggle("active", metric === state.metric);
     button.disabled = unavailable;
   });
+  if (els.energyMetricSelect) {
+    els.energyMetricSelect.value = ENERGY_SIMULATION_METRICS.includes(state.metric) ? state.metric : "";
+    Array.from(els.energyMetricSelect.options).forEach((option) => {
+      if (!option.value) return;
+      option.disabled =
+        state.mode === "grid" &&
+        metricDefinition(option.value).category !== "weather" &&
+        !hasMetricForLayer("grid_500m", option.value);
+    });
+  }
   [...els.periodButtons.querySelectorAll("button")].forEach((button) => {
     button.classList.toggle("active", button.dataset.period === state.period);
   });
@@ -690,7 +833,7 @@ function updateLayerVisibility() {
   const showBuildings = state.mode !== "grid";
   const showGrid = state.mode !== "buildings";
   const showWeather = metric.category === "weather" && showGrid;
-  const showGridFill = showGrid && !showWeather && Boolean(fieldForLayer("grid_500m", state.metric));
+  const showGridFill = showGrid && !showWeather && hasMetricForLayer("grid_500m", state.metric);
   setVisibility("weather-fill", showWeather);
   setVisibility("grid-fill", showGridFill);
   setVisibility("grid-line", showGrid || showWeather);
@@ -783,7 +926,9 @@ function updateLegend() {
     els.legendTicks.innerHTML = "<span>No data</span>";
     return;
   }
-  els.legendTicks.innerHTML = stats.stops.map((stop) => `<span>${formatNumber(stop, def.unit)}</span>`).join("");
+  els.legendTicks.innerHTML = stats.stops
+    .map((stop) => `<span>${formatNumber(stop, def.unit, metricDisplayScale())}</span>`)
+    .join("");
 }
 
 function detailRow(label, value) {
@@ -795,8 +940,8 @@ function buildingTypeGroup(type) {
 }
 
 function buildingDetails(props) {
-  const metricField = fieldForLayer("buildings", state.metric);
   const metric = metricDefinition();
+  const activeValue = metricValueFromProperties("buildings", props, state.metric);
   return [
     detailRow("Object ID", props.objectid ?? "No data"),
     detailRow("Source ID", props.source_id ?? "No data"),
@@ -811,13 +956,19 @@ function buildingDetails(props) {
     detailRow("Relative cold sensitivity", formatNumber(props.winter_pct, "%", 100)),
     detailRow("Relative hot sensitivity", formatNumber(props.summer_pct, "%", 100)),
     detailRow("Transition sensitivity", formatNumber(props.autumn_pct, "%", 100)),
-    detailRow("Active metric", metric.kind === "categorical" ? TYPE_LABELS[props.building_type] || props.building_type : formatNumber(props[metricField], metric.unit))
+    detailRow(
+      "Active metric",
+      metric.kind === "categorical"
+        ? TYPE_LABELS[props.building_type] || props.building_type
+        : formatNumber(activeValue, metric.unit, metricDisplayScale())
+    )
   ].join("");
 }
 
 function gridDetails(props) {
   const metric = metricDefinition();
   const metricField = metric.category === "weather" ? weatherField() : fieldForLayer("grid_500m", state.metric);
+  const activeValue = metricValueFromProperties("grid_500m", props, state.metric);
   const rows = [
     detailRow("Grid ID", props.grid_id ?? "No data"),
     detailRow("Relative cold energy", formatNumber(props.winter_energy_kwh, "kWh")),
@@ -835,6 +986,8 @@ function gridDetails(props) {
         formatNumber(value ?? props[metricField], metric.unit)
       )
     );
+  } else if (hasMetricForLayer("grid_500m", state.metric)) {
+    rows.push(detailRow("Active metric", formatNumber(activeValue, metric.unit, metricDisplayScale())));
   }
   return rows.join("");
 }
@@ -852,6 +1005,7 @@ function overviewDetails(props) {
 }
 
 function updateFeaturePanel(feature, type) {
+  if (!els.featureTitle || !els.featureDetails) return;
   if (!feature) {
     els.featureTitle.textContent = "Click a building or district cell";
     els.featureDetails.innerHTML = "<p>Use hover for quick values and click to pin detailed attributes.</p>";
@@ -873,11 +1027,11 @@ function popupHtml(feature, type) {
   const props = feature.properties;
   const metric = metricDefinition();
   if (type === "building") {
-    const field = fieldForLayer("buildings", state.metric);
+    const metricValue = metricValueFromProperties("buildings", props, state.metric);
     const value =
       metric.kind === "categorical"
         ? TYPE_LABELS[props.building_type] || props.building_type || "No data"
-        : formatNumber(props[field], metric.unit);
+        : formatNumber(metricValue, metric.unit, metricDisplayScale());
     return `
       <p class="popup-title">Building ${props.objectid}</p>
       <div class="popup-line"><span>Subtype</span><strong>${TYPE_LABELS[props.building_type] || props.building_type || "No data"}</strong></div>
@@ -894,10 +1048,13 @@ function popupHtml(feature, type) {
   }
   const field = metric.category === "weather" ? weatherField() : fieldForLayer("grid_500m", state.metric);
   const label = metric.category === "weather" ? `${metric.label} (${PERIODS[state.period].shortLabel})` : metric.label;
-  const value = metric.category === "weather" ? currentWeatherValue(props.grid_id) ?? props[field] : props[field];
+  const value =
+    metric.category === "weather"
+      ? currentWeatherValue(props.grid_id) ?? props[field]
+      : metricValueFromProperties("grid_500m", props, state.metric);
   return `
     <p class="popup-title">500 m grid ${props.grid_id}</p>
-    <div class="popup-line"><span>${label}</span><strong>${formatNumber(value, metric.unit)}</strong></div>
+    <div class="popup-line"><span>${label}</span><strong>${formatNumber(value, metric.unit, metricDisplayScale())}</strong></div>
   `;
 }
 
@@ -1332,9 +1489,17 @@ function bindEvents() {
   });
   els.layerMode.addEventListener("change", () => {
     state.mode = els.layerMode.value;
-    if (state.mode === "grid" && metricDefinition().category !== "weather" && !fieldForLayer("grid_500m", state.metric)) {
+    if (state.mode === "grid" && metricDefinition().category !== "weather" && !hasMetricForLayer("grid_500m", state.metric)) {
       state.metric = "energy_hot";
     }
+    updateMetricButtons();
+    updateMapStyle();
+    updateLegend();
+    refreshWeatherSeries();
+  });
+  els.energyMetricSelect?.addEventListener("change", () => {
+    if (!els.energyMetricSelect.value) return;
+    state.metric = els.energyMetricSelect.value;
     updateMetricButtons();
     updateMapStyle();
     updateLegend();

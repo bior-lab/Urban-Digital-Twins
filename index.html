@@ -16,7 +16,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     />
 
-    <link rel="stylesheet" href="src/styles.css" />
+    <link rel="stylesheet" href="src/styles.css?v=20260509-energy-dropdown" />
 
     <style>
       #resetView {
@@ -255,8 +255,8 @@
           </div>
 
           <div class="control-block metric-block">
-            <span class="control-label">Energy use (simulation data)</span>
-            <div id="energyButtons" class="button-stack"></div>
+            <label class="control-label" for="energyMetricSelect">Energy Use (weekly simulation data)</label>
+            <select id="energyMetricSelect"></select>
           </div>
 
           <div class="control-block metric-block">
@@ -336,10 +336,9 @@
     </script>
 
     <script src="src/config.js?v=20260506-hourly"></script>
-    <script src="src/app.js?v=20260507-reset-fix"></script>
+    <script src="src/app.js?v=20260509-energy-dropdown"></script>
 
     <script>
-      let isSplittingEnergyButtons = false;
       let microclimateDefaultsApplied = false;
 
       document.querySelectorAll(".app-nav-item[href^='#']").forEach((item) => {
@@ -374,8 +373,7 @@
 
           if (targetId === "energy") {
             setTimeout(activateEnergyBuildingMode, 100);
-            setTimeout(splitEnergyButtons, 200);
-            setTimeout(activateFirstEnergyMetric, 300);
+            setTimeout(activateFirstEnergyMetric, 200);
           }
         });
       });
@@ -452,49 +450,16 @@
 
       function activateFirstEnergyMetric() {
         const energyPanel = document.getElementById("energy");
-        const simulationContainer = document.getElementById("energyButtons");
+        const simulationSelect = document.getElementById("energyMetricSelect");
 
         if (!energyPanel || !energyPanel.classList.contains("active")) return;
-        if (!simulationContainer) return;
+        if (!simulationSelect || !simulationSelect.options.length) return;
 
-        const firstEnergyButton = simulationContainer.querySelector("button");
+        const firstOption = Array.from(simulationSelect.options).find((option) => option.value && !option.disabled);
+        if (!firstOption) return;
 
-        if (firstEnergyButton && !firstEnergyButton.classList.contains("active")) {
-          firstEnergyButton.click();
-        }
-      }
-
-      function splitEnergyButtons() {
-        if (isSplittingEnergyButtons) return;
-
-        const simulationContainer = document.getElementById("energyButtons");
-        const measuredContainer = document.getElementById("measuredEnergyButtons");
-
-        if (!simulationContainer || !measuredContainer) return;
-
-        isSplittingEnergyButtons = true;
-
-        requestAnimationFrame(() => {
-          const simulationButtons = Array.from(simulationContainer.querySelectorAll("button"));
-          const measuredButtons = Array.from(measuredContainer.querySelectorAll("button"));
-          const allButtons = [...simulationButtons, ...measuredButtons];
-
-          allButtons.forEach((button) => {
-            const label = button.textContent.trim().toLowerCase();
-
-            if (label === "measured eui") {
-              if (button.parentElement !== measuredContainer) {
-                measuredContainer.appendChild(button);
-              }
-            } else {
-              if (button.parentElement !== simulationContainer) {
-                simulationContainer.appendChild(button);
-              }
-            }
-          });
-
-          isSplittingEnergyButtons = false;
-        });
+        simulationSelect.value = firstOption.value;
+        simulationSelect.dispatchEvent(new Event("change", { bubbles: true }));
       }
 
       function applyWeatherButtonOrder() {
@@ -651,7 +616,6 @@
         setTimeout(activateBuildingMode, 400);
         setTimeout(activateBuildingTypeMetric, 600);
         setTimeout(applyWeatherButtonOrder, 800);
-        setTimeout(splitEnergyButtons, 900);
         setTimeout(setupResetButton, 1000);
         setTimeout(waitForMapAndCaptureInitialView, 1100);
       });
@@ -666,19 +630,6 @@
         observer.observe(buildingMetricButtons, {
           childList: true,
           subtree: true
-        });
-      }
-
-      const energyButtons = document.getElementById("energyButtons");
-
-      if (energyButtons) {
-        const energyObserver = new MutationObserver(() => {
-          if (isSplittingEnergyButtons) return;
-          splitEnergyButtons();
-        });
-
-        energyObserver.observe(energyButtons, {
-          childList: true
         });
       }
 
