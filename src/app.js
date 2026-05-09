@@ -264,6 +264,8 @@ const state = {
   metadata: null,
   buildings: null,
   grid: null,
+  regions: null,
+  selectedRegionIds: new Set(),
   mode: "combined",
   metric: "energy_hot",
   period: "hot",
@@ -297,6 +299,11 @@ const els = {
   loading: document.getElementById("loading"),
   layerMode: document.getElementById("layerMode"),
   buildingMetricButtons: document.getElementById("buildingMetricButtons"),
+  regionFilterDropdown: document.getElementById("regionFilterDropdown"),
+  regionFilterSummary: document.getElementById("regionFilterSummary"),
+  regionFilterList: document.getElementById("regionFilterList"),
+  regionSelectAll: document.getElementById("regionSelectAll"),
+  regionClearAll: document.getElementById("regionClearAll"),
   weatherButtons: document.getElementById("weatherButtons"),
   energyMetricSelect: document.getElementById("energyMetricSelect"),
   measuredEnergyButtons: document.getElementById("measuredEnergyButtons"),
@@ -355,6 +362,117 @@ function formatNumber(value, unit = "", scale = 1) {
 
 function compactCount(value) {
   return Number(value || 0).toLocaleString();
+}
+
+function regionFeatures() {
+  return state.regions?.features || [];
+}
+
+function regionIds() {
+  return regionFeatures().map((feature) => feature.properties.region_id);
+}
+
+function selectedRegionCount() {
+  return state.selectedRegionIds.size;
+}
+
+function allRegionsSelected() {
+  const ids = regionIds();
+  return ids.length > 0 && selectedRegionCount() === ids.length;
+}
+
+function regionFalseFilter() {
+  return ["==", 1, 0];
+}
+
+function selectedRegionFeatureCollection() {
+  const selected = regionFeatures().filter((feature) => state.selectedRegionIds.has(feature.properties.region_id));
+  return { type: "FeatureCollection", features: selected };
+}
+
+function buildingRegionFilterExpression() {
+  const total = regionFeatures().length;
+  if (!total || allRegionsSelected()) return null;
+  if (!selectedRegionCount()) return regionFalseFilter();
+  return ["within", selectedRegionFeatureCollection()];
+}
+
+function buildingSelectionFilterExpression() {
+  const idFilter = ["==", ["get", "objectid"], state.selectedBuildingId ?? -999999];
+  const regionFilter = buildingRegionFilterExpression();
+  return regionFilter ? ["all", idFilter, regionFilter] : idFilter;
+}
+
+function selectedRegionLayerFilterExpression() {
+  if (!regionFeatures().length || allRegionsSelected() || !selectedRegionCount()) return regionFalseFilter();
+  return ["in", ["get", "region_id"], ["literal", Array.from(state.selectedRegionIds)]];
+}
+
+function updateRegionFilterSummary() {
+  if (!els.regionFilterSummary) return;
+  const total = regionFeatures().length;
+  const count = selectedRegionCount();
+  if (!total) {
+    els.regionFilterSummary.textContent = "Loading regions...";
+  } else if (count === total) {
+    els.regionFilterSummary.textContent = `All regions (${total})`;
+  } else if (!count) {
+    els.regionFilterSummary.textContent = "No regions selected";
+  } else {
+    els.regionFilterSummary.textContent = `${count} of ${total} regions`;
+  }
+}
+
+function renderRegionFilter() {
+  const features = regionFeatures();
+  if (!els.regionFilterList || !features.length) {
+    updateRegionFilterSummary();
+    return;
+  }
+  state.selectedRegionIds = new Set(features.map((feature) => feature.properties.region_id));
+  els.regionFilterList.innerHTML = features
+    .map((feature) => {
+      const id = feature.properties.region_id;
+      const name = feature.properties.region_name || id;
+      return `
+        <label class="region-filter-option">
+          <input type="checkbox" value="${id}" checked />
+          <span>${name}</span>
+        </label>
+      `;
+    })
+    .join("");
+  updateRegionFilterSummary();
+}
+
+function syncRegionCheckboxes() {
+  if (!els.regionFilterList) return;
+  els.regionFilterList.querySelectorAll("input[type='checkbox']").forEach((input) => {
+    input.checked = state.selectedRegionIds.has(input.value);
+  });
+  updateRegionFilterSummary();
+}
+
+function shouldShowRegionOverlay() {
+  return regionFeatures().length > 0 && selectedRegionCount() > 0 && !allRegionsSelected() && state.mode !== "grid";
+}
+
+function applyRegionFilter() {
+  if (!state.map) return;
+  const buildingFilter = buildingRegionFilterExpression();
+  const selectedFilter = buildingSelectionFilterExpression();
+  try {
+    if (state.map.getLayer("buildings-extrusion")) state.map.setFilter("buildings-extrusion", buildingFilter);
+    if (state.map.getLayer("building-selected")) state.map.setFilter("building-selected", selectedFilter);
+    const regionLayerFilter = selectedRegionLayerFilterExpression();
+    ["region-filter-fill", "region-filter-line"].forEach((layer) => {
+      if (!state.map.getLayer(layer)) return;
+      state.map.setFilter(layer, regionLayerFilter);
+      state.map.setLayoutProperty(layer, "visibility", shouldShowRegionOverlay() ? "visible" : "none");
+    });
+  } catch (error) {
+    console.warn("Region filter could not be applied", error);
+  }
 }
 
 function metricDefinition(metric = state.metric) {
@@ -893,6 +1011,7 @@ function updateLayerVisibility() {
   setVisibility("building-overview-line", showBuildings);
   setVisibility("buildings-extrusion", showBuildings);
   setVisibility("building-selected", showBuildings);
+  applyRegionFilter();
 }
 
 function updateMapStyle() {
@@ -1116,13 +1235,13 @@ function setSelectedFeature(feature, type) {
   if (type === "building") {
     state.selectedBuildingId = Number(feature.properties.objectid);
     state.selectedGridId = null;
-    state.map.setFilter("building-selected", ["==", ["get", "objectid"], state.selectedBuildingId]);
+    applyRegionFilter();
     state.map.setFilter("grid-selected", ["==", ["get", "grid_id"], -999999]);
   } else {
     state.selectedGridId = Number(feature.properties.grid_id);
     state.selectedBuildingId = null;
     state.map.setFilter("grid-selected", ["==", ["get", "grid_id"], state.selectedGridId]);
-    state.map.setFilter("building-selected", ["==", ["get", "objectid"], -999999]);
+    applyRegionFilter();
   }
   updateFeaturePanel(feature, type);
 }
@@ -1306,6 +1425,13 @@ async function addLayers() {
     "grid_id"
   );
 
+  if (state.regions) {
+    state.map.addSource("regions", {
+      type: "geojson",
+      data: state.regions
+    });
+  }
+
   if (state.fallbackSources.buildingOverview) {
     state.map.addLayer({
       id: "building-overview-fill",
@@ -1361,6 +1487,32 @@ async function addLayers() {
       "line-width": 0.5
     }
   });
+
+  if (state.regions) {
+    state.map.addLayer({
+      id: "region-filter-fill",
+      type: "fill",
+      source: "regions",
+      filter: regionFalseFilter(),
+      layout: { visibility: "none" },
+      paint: {
+        "fill-color": "#003d7c",
+        "fill-opacity": 0.08
+      }
+    });
+    state.map.addLayer({
+      id: "region-filter-line",
+      type: "line",
+      source: "regions",
+      filter: regionFalseFilter(),
+      layout: { visibility: "none" },
+      paint: {
+        "line-color": "#003d7c",
+        "line-width": 1.4,
+        "line-opacity": 0.72
+      }
+    });
+  }
 
   if (state.fallbackSources.weather) {
     state.map.addLayer({
@@ -1446,6 +1598,7 @@ async function addLayers() {
   });
 
   updateLayerVisibility();
+  applyRegionFilter();
 }
 
 async function loadData() {
@@ -1455,6 +1608,12 @@ async function loadData() {
   state.metadata = await metadataResponse.json();
   els.buildingCount.textContent = compactCount(state.metadata.layers.buildings.count);
   els.gridCount.textContent = compactCount(state.metadata.layers.grid_500m.count);
+
+  showLoading("Loading Singapore regions...");
+  const regionResponse = await fetch("data/regions_sg.geojson", { cache: "no-store" });
+  if (!regionResponse.ok) throw new Error(`Region request failed: ${regionResponse.status}`);
+  state.regions = await regionResponse.json();
+  renderRegionFilter();
 
   state.useHostedTilesets = hasCoreHostedTilesets();
   if (state.useHostedTilesets) {
@@ -1578,11 +1737,29 @@ function bindEvents() {
     updateLegend();
   });
   els.weatherPlay.addEventListener("click", toggleWeatherPlayback);
+  els.regionFilterList?.addEventListener("change", (event) => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement) || input.type !== "checkbox") return;
+    if (input.checked) state.selectedRegionIds.add(input.value);
+    else state.selectedRegionIds.delete(input.value);
+    updateRegionFilterSummary();
+    applyRegionFilter();
+  });
+  els.regionSelectAll?.addEventListener("click", () => {
+    state.selectedRegionIds = new Set(regionIds());
+    syncRegionCheckboxes();
+    applyRegionFilter();
+  });
+  els.regionClearAll?.addEventListener("click", () => {
+    state.selectedRegionIds = new Set();
+    syncRegionCheckboxes();
+    applyRegionFilter();
+  });
   els.resetView.addEventListener("click", () => {
     state.selectedBuildingId = null;
     state.selectedGridId = null;
     if (state.map?.getLayer("building-selected")) {
-      state.map.setFilter("building-selected", ["==", ["get", "objectid"], -999999]);
+      applyRegionFilter();
       state.map.setFilter("grid-selected", ["==", ["get", "grid_id"], -999999]);
     }
     updateFeaturePanel(null);
