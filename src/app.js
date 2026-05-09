@@ -271,6 +271,7 @@ const REGION_GROUP_LABELS = {
 };
 
 const REGION_GROUP_ORDER = ["Central Region", "East Region", "North Region", "North-East Region", "West Region", "MK", "TS", "Other"];
+const BUILDING_REGION_FIELD = "planning_area_code";
 
 const state = {
   map: null,
@@ -291,6 +292,7 @@ const state = {
   useHostedTilesets: false,
   sourceLayers: {},
   sourceTypes: {},
+  sourceFields: {},
   searchIndex: null,
   weatherManifest: null,
   weatherSeriesCache: {},
@@ -446,16 +448,21 @@ function regionFalseFilter() {
   return ["==", ["get", "region_id"], "__none__"];
 }
 
-function selectedRegionFeatureCollection() {
-  const selected = regionFeatures().filter((feature) => state.selectedRegionIds.has(regionId(feature)));
-  return { type: "FeatureCollection", features: selected };
+function buildingRegionPropertyAvailable() {
+  const hostedFields = state.sourceFields.buildings;
+  if (hostedFields) return hostedFields.has(BUILDING_REGION_FIELD);
+  const sampleProperties = state.buildings?.features?.[0]?.properties || {};
+  return Object.prototype.hasOwnProperty.call(sampleProperties, BUILDING_REGION_FIELD);
 }
 
 function buildingRegionFilterExpression() {
   const total = regionFeatures().length;
   if (!total || allRegionsSelected()) return null;
   if (!selectedRegionCount()) return regionFalseFilter();
-  return ["within", selectedRegionFeatureCollection()];
+  if (buildingRegionPropertyAvailable()) {
+    return ["in", ["to-string", ["get", BUILDING_REGION_FIELD]], ["literal", Array.from(state.selectedRegionIds)]];
+  }
+  return null;
 }
 
 function buildingSelectionFilterExpression() {
@@ -594,18 +601,38 @@ function focusRegionIds(ids, maxZoom = 13.8) {
   const features = regionFeatures().filter((feature) => idsSet.has(regionId(feature)));
   const bounds = boundsForRegionFeatures(features);
   if (!bounds) return;
+  const center = [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2];
+  if (ids.length === 1) {
+    state.map.easeTo({ center, zoom: maxZoom, duration: 850, essential: true });
+    return;
+  }
   const isCompact = window.innerWidth < 900;
-  state.map.fitBounds(bounds, {
-    padding: {
-      top: 76,
-      bottom: 76,
-      left: isCompact ? 42 : 470,
-      right: window.innerWidth > 1120 ? 420 : 42
-    },
-    maxZoom,
-    duration: 850,
-    essential: true
-  });
+  const padding = {
+    top: 64,
+    bottom: 64,
+    left: isCompact ? 32 : Math.min(320, Math.round(window.innerWidth * 0.22)),
+    right: window.innerWidth > 1120 ? Math.min(260, Math.round(window.innerWidth * 0.16)) : 32
+  };
+  try {
+    state.map.fitBounds(bounds, {
+      padding,
+      maxZoom,
+      duration: 850,
+      essential: true
+    });
+  } catch (error) {
+    console.warn("Region bounds did not fit; using center fallback", error);
+    state.map.easeTo({ center, zoom: Math.min(maxZoom, 13.6), duration: 850, essential: true });
+    return;
+  }
+  window.setTimeout(() => {
+    const current = state.map.getCenter();
+    const movedLng = Math.abs(current.lng - center[0]);
+    const movedLat = Math.abs(current.lat - center[1]);
+    if (movedLng > 0.18 || movedLat > 0.18) {
+      state.map.easeTo({ center, zoom: Math.min(maxZoom, 13.6), duration: 650, essential: true });
+    }
+  }, 900);
 }
 
 function applyRegionFilter() {
@@ -916,16 +943,25 @@ function tilesetId(url) {
 async function resolveTilesetSourceLayer(kind) {
   const config = tilesetConfig(kind);
   if (!config.url) return null;
-  if (config.sourceLayer) return config.sourceLayer;
   const id = tilesetId(config.url);
-  if (!id) return null;
-  const response = await fetch(
-    `https://api.mapbox.com/v4/${id}.json?secure&access_token=${encodeURIComponent(mapboxgl.accessToken)}`,
-    { cache: "no-store" }
-  );
-  if (!response.ok) throw new Error(`Tileset metadata failed for ${kind}: ${response.status}`);
-  const tilejson = await response.json();
-  return tilejson.vector_layers?.[0]?.id || null;
+  if (!id) return config.sourceLayer || null;
+  try {
+    const response = await fetch(
+      `https://api.mapbox.com/v4/${id}.json?secure&access_token=${encodeURIComponent(mapboxgl.accessToken)}`,
+      { cache: "no-store" }
+    );
+    if (!response.ok) throw new Error(`Tileset metadata failed for ${kind}: ${response.status}`);
+    const tilejson = await response.json();
+    const layer =
+      tilejson.vector_layers?.find((candidate) => candidate.id === config.sourceLayer) ||
+      tilejson.vector_layers?.[0] ||
+      null;
+    state.sourceFields[kind] = new Set(Object.keys(layer?.fields || {}));
+    return layer?.id || config.sourceLayer || null;
+  } catch (error) {
+    if (config.sourceLayer) return config.sourceLayer;
+    throw error;
+  }
 }
 
 async function resolveRequiredHostedSourceLayers() {

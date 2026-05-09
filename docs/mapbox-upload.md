@@ -10,14 +10,14 @@ Upload these files in Mapbox Studio Data manager:
 
 1. `mapbox-studio-upload/03_weather_500m.geojson`
 2. `mapbox-studio-upload/04_building_overview_500m.geojson`
-3. `mapbox-studio-upload/05_buildings_energy_weekly.geojson`
+3. `mapbox-studio-upload/07_buildings_energy_weekly_regions.geojson`
 4. `mapbox-studio-upload/06_grid_energy_weekly.geojson`
 
 Recommended tileset names:
 
 - `03_weather_500m`
 - `04_building_overview_500m`
-- `05_buildings_energy_weekly`
+- `07_buildings_energy_weekly_regions`
 - `06_grid_energy_weekly`
 
 After each upload finishes processing, open the tileset detail page and copy the tileset URL, for example
@@ -37,7 +37,7 @@ buildingOverview: {
   sourceLayer: ""
 },
 buildings: {
-  url: "mapbox://username.weeklyBuildingTilesetId",
+  url: "mapbox://username.weeklyBuildingRegionTilesetId",
   sourceLayer: ""
 },
 grid: {
@@ -96,3 +96,20 @@ Copy the generated `05_buildings_energy_weekly.geojson` and `06_grid_energy_week
 `1.Mapbox-website\mapbox-studio-upload` folder and upload the `.geojson` files directly to Mapbox Studio. Do not zip
 GeoJSON files for Mapbox Studio uploads; zipped uploads are interpreted as Shapefile archives and must contain `.shp`
 sidecar files. These GeoJSON files contain raw building-level values, so keep them out of GitHub.
+
+## Attach Planning Areas To Buildings
+
+The region filter needs a building property named `planning_area_code`. After regenerating weekly energy buildings,
+attach Singapore planning-area fields before uploading the production building tileset:
+
+```powershell
+python .\scripts\attach_region_fields.py `
+  --buildings "F:\博士文件\石老师课题组\第四篇小论文-城市能碳计算\1.Mapbox-website\mapbox-studio-upload\05_buildings_energy_weekly.geojson" `
+  --regions ".\data\regions_sg.geojson" `
+  --out "F:\博士文件\石老师课题组\第四篇小论文-城市能碳计算\1.Mapbox-website\mapbox-studio-upload\07_buildings_energy_weekly_regions.geojson"
+```
+
+Upload `07_buildings_energy_weekly_regions.geojson` to Mapbox Studio and use that tileset for `buildings` in
+`src/config.js`. The app detects the `planning_area_code` field from TileJSON metadata and uses it for exact
+building filtering. If the current building tileset does not have this field, the app still zooms to the selected
+area instead of hiding all buildings.
