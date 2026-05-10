@@ -320,7 +320,7 @@ select:focus {
 
 .team-list dt {
   color: inherit;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   text-align: left;
 }
@@ -328,7 +328,7 @@ select:focus {
 .team-list dd {
   margin: 0;
   color: inherit;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 600;
   text-align: left;
 }
