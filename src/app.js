@@ -169,12 +169,13 @@ const METRICS = {
     ramp: ENERGY_DIFFERENCE_RAMP
   },
   eui_2023: {
-    label: "Measured energy use (EUI 2023)",
-    shortLabel: "Measured EUI",
+    label: "Measured yearly energy use intensity",
+    shortLabel: "Measured yearly EUI",
     category: "energy",
-    unit: "kWh/m2",
+    unit: "kWh/m2/yr",
+    positiveOnly: true,
     fieldByLayer: { buildings: "eui_2023", building_overview_500m: "mean_eui_2023" },
-    ramp: ["#f2f5f7", "#bdd7d8", "#74b5b0", "#2c8a82", "#075d59"]
+    ramp: ["#eaf4ff", "#7cc7e8", "#f4d35e", "#ee8b3a", "#c7362f"]
   }
 };
 
@@ -362,6 +363,7 @@ function finiteNumber(value) {
 }
 
 function formatNumber(value, unit = "", scale = 1) {
+  if (value === null || value === undefined || value === "") return "No data";
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return "No data";
   const scaled = numeric * scale;
@@ -706,6 +708,8 @@ function metricStats(layerName, metric = state.metric) {
 function metricInputExpression(layerName, metric = state.metric) {
   const def = metricDefinition(metric);
   const field = fieldForLayer(layerName, metric);
+  const validMetricValueExpression = (valueExpression) =>
+    def.positiveOnly ? [">", valueExpression, 0] : ["!=", valueExpression, -9999];
   if (def.compute === "microclimate_energy") {
     const baseField = def.fallbackBaseFieldByLayer?.[layerName];
     const pctField = def.fallbackPctFieldByLayer?.[layerName];
@@ -736,16 +740,28 @@ function metricInputExpression(layerName, metric = state.metric) {
   }
   if (!field) return null;
   const fallbackField = def.fallbackFieldByLayer?.[layerName];
-  if (!fallbackField) return ["case", ["has", field], ["to-number", ["get", field], -9999], -9999];
+  if (!fallbackField) {
+    return [
+      "let",
+      "direct_value",
+      ["to-number", ["get", field], -9999],
+      ["case", validMetricValueExpression(["var", "direct_value"]), ["var", "direct_value"], -9999]
+    ];
+  }
   return [
     "let",
     "direct_value",
     ["to-number", ["get", field], -9999],
     [
       "case",
-      ["!=", ["var", "direct_value"], -9999],
+      validMetricValueExpression(["var", "direct_value"]),
       ["var", "direct_value"],
-      ["case", ["has", fallbackField], ["to-number", ["get", fallbackField], -9999], -9999]
+      [
+        "let",
+        "fallback_value",
+        ["to-number", ["get", fallbackField], -9999],
+        ["case", validMetricValueExpression(["var", "fallback_value"]), ["var", "fallback_value"], -9999]
+      ]
     ]
   ];
 }
@@ -755,7 +771,7 @@ function metricValueFromProperties(layerName, props, metric = state.metric) {
   if (def.kind === "categorical") return props.building_type;
   const field = fieldForLayer(layerName, metric);
   const direct = finiteNumber(props[field]);
-  if (direct !== null) return direct;
+  if (direct !== null && (!def.positiveOnly || direct > 0)) return direct;
   if (def.compute === "microclimate_energy") {
     const base = finiteNumber(props[def.fallbackBaseFieldByLayer?.[layerName]]);
     const pct = finiteNumber(props[def.fallbackPctFieldByLayer?.[layerName]]);
@@ -763,7 +779,8 @@ function metricValueFromProperties(layerName, props, metric = state.metric) {
     return base * (1 + (pct ?? 0));
   }
   const fallbackField = def.fallbackFieldByLayer?.[layerName];
-  return fallbackField ? props[fallbackField] : null;
+  const fallback = fallbackField ? finiteNumber(props[fallbackField]) : null;
+  return fallback !== null && (!def.positiveOnly || fallback > 0) ? fallback : null;
 }
 
 function weatherVariable(metric = state.metric) {
@@ -1043,6 +1060,7 @@ function buildArchetypeExpression() {
 function buildingColorExpression() {
   if (state.metric === "building_type") return buildTypeExpression();
   if (metricDefinition().category === "weather") return "rgba(65, 79, 92, 0.42)";
+  if (state.metric === "eui_2023") return buildInterpolateExpression("buildings", state.metric, "rgba(148, 163, 184, 0.12)");
   return buildInterpolateExpression("buildings", state.metric, "rgba(94, 110, 124, 0.36)");
 }
 
@@ -1064,7 +1082,8 @@ function weatherColorExpression() {
 
 function overviewColorExpression() {
   if (state.metric === "height_m" || state.metric === "eui_2023") {
-    return buildInterpolateExpression("building_overview_500m", state.metric, "rgba(115, 133, 148, 0.18)");
+    const fallback = state.metric === "eui_2023" ? "rgba(148, 163, 184, 0.10)" : "rgba(115, 133, 148, 0.18)";
+    return buildInterpolateExpression("building_overview_500m", state.metric, fallback);
   }
   return buildArchetypeExpression();
 }
@@ -1315,7 +1334,7 @@ function buildingDetails(props) {
     detailRow("Height", formatNumber(props.height_m, "m")),
     detailRow("Footprint", formatNumber(props.footprint_m2, "m2")),
     detailRow("GFA", formatNumber(props.gfa_m2, "m2")),
-    detailRow("Measured EUI", formatNumber(props.eui_2023, "kWh/m2")),
+    detailRow("Measured yearly EUI", formatNumber(metricValueFromProperties("buildings", props, "eui_2023"), "kWh/m2/yr")),
     detailRow("Energy use", formatNumber(props.energy_total_kwh, "kWh")),
     detailRow("Relative cold sensitivity", formatNumber(props.winter_pct, "%", 100)),
     detailRow("Relative hot sensitivity", formatNumber(props.summer_pct, "%", 100)),
@@ -1363,7 +1382,7 @@ function overviewDetails(props) {
     detailRow("Dominant archetype", props.dominant_archetype_label || "No data"),
     detailRow("Dominant subtype", props.dominant_type_label || "No data"),
     detailRow("Mean height", formatNumber(props.mean_height_m, "m")),
-    detailRow("Mean EUI 2023", formatNumber(props.mean_eui_2023, "kWh/m2")),
+    detailRow("Mean yearly EUI", formatNumber(metricValueFromProperties("building_overview_500m", props, "eui_2023"), "kWh/m2/yr")),
     detailRow("Mean energy use", formatNumber(props.mean_energy_kwh, "kWh"))
   ].join("");
 }
