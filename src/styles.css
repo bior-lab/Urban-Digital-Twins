@@ -298,6 +298,30 @@ select:focus {
   line-height: 1.55;
 }
 
+.team-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.team-list div {
+  display: grid;
+  gap: 2px;
+}
+
+.team-list dt {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.team-list dd {
+  margin: 0;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .eyebrow {
   margin: 0 0 8px;
   color: var(--nus-orange);
