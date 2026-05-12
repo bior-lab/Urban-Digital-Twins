@@ -253,10 +253,14 @@ select:focus {
   position: fixed;
   right: 18px;
   bottom: 24px;
-  width: min(388px, calc(100vw - var(--nav-width) - var(--sidebar-width) - 48px));
-  max-height: calc(100vh - 48px);
-  padding: 18px;
+  width: min(326px, calc(100vw - var(--nav-width) - var(--sidebar-width) - 48px));
+  min-width: 276px;
+  min-height: 180px;
+  max-width: 520px;
+  max-height: min(56vh, 620px);
+  padding: 14px;
   overflow: auto;
+  resize: both;
   border-radius: 10px;
   box-shadow: var(--shadow);
   background: rgba(255, 255, 255, 0.96);
@@ -296,6 +300,18 @@ select:focus {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.55;
+}
+
+.summary-text a {
+  color: var(--nus-blue);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.summary-text a:hover {
+  color: var(--nus-orange);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .about-summary {
@@ -412,6 +428,10 @@ select:focus {
 
 .segmented.three {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.segmented.single {
+  grid-template-columns: 1fr;
 }
 
 .lcz-layer-buttons {
@@ -636,8 +656,8 @@ input[type="range"] {
 
 .type-legend {
   display: grid;
-  gap: 12px;
-  margin-top: 14px;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .type-group {
@@ -652,15 +672,15 @@ input[type="range"] {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 8px;
-  padding: 9px 10px;
+  padding: 7px 8px;
   border-bottom: 1px solid rgba(0, 61, 124, 0.12);
   color: var(--nus-blue-dark);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .type-group-head em {
   color: var(--muted);
-  font-size: 11px;
+  font-size: 10px;
   font-style: normal;
 }
 
@@ -674,11 +694,12 @@ input[type="range"] {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 8px;
-  min-height: 30px;
+  min-height: 24px;
   border: 0;
   border-radius: 0;
-  padding: 5px 10px;
+  padding: 3px 8px;
   color: var(--muted);
+  font-size: 11px;
   background: transparent;
   text-align: left;
 }
@@ -689,12 +710,12 @@ input[type="range"] {
 
 .type-swatch-row strong {
   color: var(--ink);
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .lcz-summary-note {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.45;
 }
 
@@ -705,7 +726,7 @@ input[type="range"] {
 .lcz-swatch-row em {
   min-width: 44px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 10px;
   font-style: normal;
   text-align: right;
 }
@@ -1053,9 +1074,13 @@ input[type="range"] {
     right: auto;
     bottom: auto;
     width: 100%;
+    min-width: 0;
+    min-height: auto;
+    max-width: none;
     max-height: none;
     padding: 22px 20px 28px;
     overflow: visible;
+    resize: none;
     border: 0;
     border-top: 1px solid var(--line);
     border-radius: 0;
@@ -1156,9 +1181,10 @@ input[type="range"] {
   border: 1px solid var(--nus-blue);
   background: var(--nus-blue);
   color: #ffffff;
-  border-radius: 14px;
-  padding: 12px 22px;
-  font-size: 16px;
+  border-radius: 8px;
+  min-height: 32px;
+  padding: 7px 12px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1;
   cursor: pointer;

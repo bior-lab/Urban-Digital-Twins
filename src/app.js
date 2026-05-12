@@ -2,9 +2,9 @@ const CONFIG = window.SG_ENERGY_MAP_CONFIG || {};
 const TOKEN_STORAGE_KEY = "sg-energy-mapbox-token";
 
 const PERIODS = {
-  hot: { label: "Relative hot season (May)", shortLabel: "Relative hot" },
-  cold: { label: "Relative cold season (Dec)", shortLabel: "Relative cold" },
-  transition: { label: "Transition season (Oct)", shortLabel: "Transition" }
+  hot: { label: "Relatively hot season (May)", shortLabel: "Relatively hot season (May)" },
+  cold: { label: "Relatively cold season (Dec)", shortLabel: "Relatively cold season (Dec)" },
+  transition: { label: "Transitional season (Oct)", shortLabel: "Transitional season (Oct)" }
 };
 
 const WEATHER_VARIABLES = {
@@ -371,6 +371,7 @@ const els = {
   regionClearAll: document.getElementById("regionClearAll"),
   lczLayerButtons: document.getElementById("lczLayerButtons"),
   weatherButtons: document.getElementById("weatherButtons"),
+  energyBuildingTypeButtons: document.getElementById("energyBuildingTypeButtons"),
   energyMetricSelect: document.getElementById("energyMetricSelect"),
   measuredEnergyButtons: document.getElementById("measuredEnergyButtons"),
   periodButtons: document.getElementById("periodButtons"),
@@ -392,6 +393,11 @@ const els = {
   featureDetails: document.getElementById("featureDetails"),
   resetView: document.getElementById("resetView")
 };
+
+els.regionFilterSummaries = Array.from(document.querySelectorAll("[data-region-filter-summary]"));
+els.regionFilterLists = Array.from(document.querySelectorAll("[data-region-filter-list]"));
+els.regionSelectAllButtons = Array.from(document.querySelectorAll("[data-region-select-all]"));
+els.regionClearAllButtons = Array.from(document.querySelectorAll("[data-region-clear-all]"));
 
 function getToken() {
   const configuredToken =
@@ -559,23 +565,29 @@ function regionLabelFilterExpression() {
 }
 
 function updateRegionFilterSummary() {
-  if (!els.regionFilterSummary) return;
+  const summaries = els.regionFilterSummaries?.length ? els.regionFilterSummaries : [els.regionFilterSummary].filter(Boolean);
+  if (!summaries.length) return;
   const total = regionFeatures().length;
   const count = selectedRegionCount();
+  let text;
   if (!total) {
-    els.regionFilterSummary.textContent = "Loading regions...";
+    text = "Loading regions...";
   } else if (count === total) {
-    els.regionFilterSummary.textContent = `All areas (${total})`;
+    text = `All areas (${total})`;
   } else if (!count) {
-    els.regionFilterSummary.textContent = "No areas selected";
+    text = "No areas selected";
   } else {
-    els.regionFilterSummary.textContent = `${count} of ${total} areas`;
+    text = `${count} of ${total} areas`;
   }
+  summaries.forEach((summary) => {
+    summary.textContent = text;
+  });
 }
 
 function renderRegionFilter() {
   const features = regionFeatures();
-  if (!els.regionFilterList || !features.length) {
+  const lists = els.regionFilterLists?.length ? els.regionFilterLists : [els.regionFilterList].filter(Boolean);
+  if (!lists.length || !features.length) {
     updateRegionFilterSummary();
     return;
   }
@@ -603,7 +615,7 @@ function renderRegionFilter() {
       `;
     })
     .join("");
-  els.regionFilterList.innerHTML = `
+  const markup = `
     <div class="region-filter-section">
       <div class="region-filter-section-title">Major regions</div>
       ${groupMarkup}
@@ -613,19 +625,24 @@ function renderRegionFilter() {
       ${districtMarkup}
     </div>
   `;
+  lists.forEach((list) => {
+    list.innerHTML = markup;
+  });
   updateRegionFilterSummary();
 }
 
 function syncRegionCheckboxes() {
-  if (!els.regionFilterList) return;
-  els.regionFilterList.querySelectorAll("input[data-region-id]").forEach((input) => {
-    input.checked = state.selectedRegionIds.has(input.value);
-  });
-  els.regionFilterList.querySelectorAll("input[data-region-group]").forEach((input) => {
-    const ids = regionIdsForGroup(input.dataset.regionGroup);
-    const checkedCount = ids.filter((id) => state.selectedRegionIds.has(id)).length;
-    input.checked = ids.length > 0 && checkedCount === ids.length;
-    input.indeterminate = checkedCount > 0 && checkedCount < ids.length;
+  const lists = els.regionFilterLists?.length ? els.regionFilterLists : [els.regionFilterList].filter(Boolean);
+  lists.forEach((list) => {
+    list.querySelectorAll("input[data-region-id]").forEach((input) => {
+      input.checked = state.selectedRegionIds.has(input.value);
+    });
+    list.querySelectorAll("input[data-region-group]").forEach((input) => {
+      const ids = regionIdsForGroup(input.dataset.regionGroup);
+      const checkedCount = ids.filter((id) => state.selectedRegionIds.has(id)).length;
+      input.checked = ids.length > 0 && checkedCount === ids.length;
+      input.indeterminate = checkedCount > 0 && checkedCount < ids.length;
+    });
   });
   updateRegionFilterSummary();
 }
@@ -1277,6 +1294,12 @@ function createMetricButton(container, key) {
       state.mode = "combined";
       els.layerMode.value = "combined";
     }
+    if (def.category === "building" && state.mode === "grid") {
+      state.mode = "buildings";
+      if (els.layerMode) els.layerMode.value = "buildings";
+      const layerModeEnergy = document.getElementById("layerModeEnergy");
+      if (layerModeEnergy) layerModeEnergy.value = "buildings";
+    }
     updateMapStyle();
     updateMetricButtons();
     updateLegend();
@@ -1307,6 +1330,7 @@ function initMetricButtons() {
   [
     [els.buildingMetricButtons, ["building_type", "height_m"]],
     [els.weatherButtons, ["weather_temp", "weather_wind", "weather_rh", "weather_solar"]],
+    [els.energyBuildingTypeButtons, ["building_type"]],
     [els.measuredEnergyButtons, ["eui_2023"]]
   ].forEach(([container, keys]) => {
     if (!container) return;
@@ -1349,14 +1373,20 @@ function updateLczButtons() {
 
 function updateMetricButtons() {
   const buttons = [
-    ...els.buildingMetricButtons.querySelectorAll("button"),
-    ...els.weatherButtons.querySelectorAll("button"),
+    ...(els.buildingMetricButtons ? els.buildingMetricButtons.querySelectorAll("button") : []),
+    ...(els.weatherButtons ? els.weatherButtons.querySelectorAll("button") : []),
+    ...(els.energyBuildingTypeButtons ? els.energyBuildingTypeButtons.querySelectorAll("button") : []),
     ...(els.measuredEnergyButtons ? els.measuredEnergyButtons.querySelectorAll("button") : [])
   ];
   buttons.forEach((button) => {
     const metric = button.dataset.metric;
     const def = metricDefinition(metric);
-    const unavailable = state.mode === "grid" && def.category !== "weather" && !hasMetricForLayer("grid_500m", metric);
+    const canSwitchToBuildings = Boolean(button.closest("#energyBuildingTypeButtons"));
+    const unavailable =
+      !canSwitchToBuildings &&
+      state.mode === "grid" &&
+      def.category !== "weather" &&
+      !hasMetricForLayer("grid_500m", metric);
     button.classList.toggle("active", metric === state.metric);
     button.disabled = unavailable;
   });
@@ -2320,15 +2350,15 @@ function bindEvents() {
     updateMapStyle();
     updateLegend();
   });
-  els.searchButton.addEventListener("click", search);
-  els.searchInput.addEventListener("keydown", (event) => {
+  els.searchButton?.addEventListener("click", search);
+  els.searchInput?.addEventListener("keydown", (event) => {
     if (event.key === "Enter") search();
   });
-  els.heightScale.addEventListener("input", () => {
+  els.heightScale?.addEventListener("input", () => {
     state.heightScale = Number(els.heightScale.value);
     updateMapStyle();
   });
-  els.gridOpacity.addEventListener("input", () => {
+  els.gridOpacity?.addEventListener("input", () => {
     state.gridOpacity = Number(els.gridOpacity.value);
     updateMapStyle();
   });
@@ -2339,41 +2369,47 @@ function bindEvents() {
     updateLegend();
   });
   els.weatherPlay.addEventListener("click", toggleWeatherPlayback);
-  els.regionFilterList?.addEventListener("change", (event) => {
-    const input = event.target;
-    if (!(input instanceof HTMLInputElement) || input.type !== "checkbox") return;
-    const groupId = input.dataset.regionGroup;
-    if (groupId) {
-      const ids = regionIdsForGroup(groupId);
-      ids.forEach((id) => {
-        if (input.checked) state.selectedRegionIds.add(id);
-        else state.selectedRegionIds.delete(id);
-      });
+  (els.regionFilterLists || []).forEach((list) => {
+    list.addEventListener("change", (event) => {
+      const input = event.target;
+      if (!(input instanceof HTMLInputElement) || input.type !== "checkbox") return;
+      const groupId = input.dataset.regionGroup;
+      if (groupId) {
+        const ids = regionIdsForGroup(groupId);
+        ids.forEach((id) => {
+          if (input.checked) state.selectedRegionIds.add(id);
+          else state.selectedRegionIds.delete(id);
+        });
+        syncRegionCheckboxes();
+        applyRegionFilter();
+        updateLegend();
+        if (input.checked) focusRegionIds(ids, 11.9);
+        return;
+      }
+      const id = input.dataset.regionId || input.value;
+      if (input.checked) state.selectedRegionIds.add(id);
+      else state.selectedRegionIds.delete(id);
       syncRegionCheckboxes();
       applyRegionFilter();
       updateLegend();
-      if (input.checked) focusRegionIds(ids, 11.9);
-      return;
-    }
-    const id = input.dataset.regionId || input.value;
-    if (input.checked) state.selectedRegionIds.add(id);
-    else state.selectedRegionIds.delete(id);
-    syncRegionCheckboxes();
-    applyRegionFilter();
-    updateLegend();
-    if (input.checked) focusRegionIds([id], 13.8);
+      if (input.checked) focusRegionIds([id], 13.8);
+    });
   });
-  els.regionSelectAll?.addEventListener("click", () => {
-    state.selectedRegionIds = new Set(regionIds());
-    syncRegionCheckboxes();
-    applyRegionFilter();
-    updateLegend();
+  (els.regionSelectAllButtons || []).forEach((button) => {
+    button.addEventListener("click", () => {
+      state.selectedRegionIds = new Set(regionIds());
+      syncRegionCheckboxes();
+      applyRegionFilter();
+      updateLegend();
+    });
   });
-  els.regionClearAll?.addEventListener("click", () => {
-    state.selectedRegionIds = new Set();
-    syncRegionCheckboxes();
-    applyRegionFilter();
-    updateLegend();
+  (els.regionClearAllButtons || []).forEach((button) => {
+    button.addEventListener("click", () => {
+      state.selectedRegionIds = new Set();
+      syncRegionCheckboxes();
+      applyRegionFilter();
+      updateLegend();
+    });
   });
   els.resetView.addEventListener("click", () => {
     state.selectedBuildingId = null;

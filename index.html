@@ -23,7 +23,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     />
 
-    <link rel="stylesheet" href="src/styles.css?v=20260512-lcz-v1" />
+    <link rel="stylesheet" href="src/styles.css?v=20260512-controls-v1" />
 
     <style>
       #resetView {
@@ -141,27 +141,32 @@
 
           <div class="control-block questions-section">
             <span class="control-label">Questions to answer:</span>
-            <p class="summary-text">to be added</p>
+            <p class="summary-text">
+              Which building archetypes and urban forms drive spatial differences in Singapore's energy demand?
+            </p>
           </div>
 
           <div class="control-block what-how-section">
             <span class="control-label">What &amp; How:</span>
-            <p class="summary-text">to be added</p>
+            <p class="summary-text">
+              Building footprints are classified, linked to morphology and measured EUI, and aggregated to 500 m
+              districts for cross-scale exploration.
+            </p>
           </div>
 
           <div class="control-block region-filter-block">
             <span class="control-label">Region filter</span>
             <details id="regionFilterDropdown" class="region-filter-dropdown">
               <summary>
-                <span id="regionFilterSummary">All regions</span>
+                <span id="regionFilterSummary" data-region-filter-summary>All regions</span>
                 <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
               </summary>
               <div class="region-filter-menu">
                 <div class="region-filter-actions">
-                  <button id="regionSelectAll" type="button">Select all</button>
-                  <button id="regionClearAll" type="button">Clear</button>
+                  <button id="regionSelectAll" type="button" data-region-select-all>Select all</button>
+                  <button id="regionClearAll" type="button" data-region-clear-all>Clear</button>
                 </div>
-                <div id="regionFilterList" class="region-filter-list"></div>
+                <div id="regionFilterList" class="region-filter-list" data-region-filter-list></div>
               </div>
             </details>
           </div>
@@ -193,24 +198,8 @@
             <div id="buildingMetricButtons" class="segmented compact"></div>
           </div>
 
-          <div class="control-block" id="searchTools">
-            <label class="control-label" for="searchInput">Find building or grid</label>
-            <div class="search-row">
-              <input id="searchInput" type="search" placeholder="objectid, source id, or grid id" autocomplete="off" />
-              <button id="searchButton" type="button">Search</button>
-            </div>
-          </div>
-
-          <div class="control-grid">
-            <label>
-              <span class="control-label">3D height</span>
-              <input id="heightScale" type="range" min="0" max="2.5" value="1" step="0.1" />
-            </label>
-            <label>
-              <span class="control-label">Grid opacity</span>
-              <input id="gridOpacity" type="range" min="0" max="0.9" value="0.48" step="0.03" />
-            </label>
-          </div>
+          <input id="heightScale" class="hidden-control" type="range" min="0" max="2.5" value="1" step="0.1" />
+          <input id="gridOpacity" class="hidden-control" type="range" min="0" max="0.9" value="0.48" step="0.03" />
 
           <div class="summary-strip">
             <div>
@@ -225,7 +214,12 @@
 
           <div class="control-block data-source-section">
             <span class="control-label">Data source:</span>
-            <p class="summary-text">to be added</p>
+            <p class="summary-text">
+              <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6203923" target="_blank" rel="noopener noreferrer">
+                SSRN preprint
+              </a>
+              available; main paper text coming soon.
+            </p>
           </div>
         </div>
 
@@ -239,12 +233,17 @@
 
           <div class="control-block questions-section">
             <span class="control-label">Questions to answer:</span>
-            <p class="summary-text">to be added</p>
+            <p class="summary-text">
+              How do representative hot, cold, and transitional weeks reshape local weather exposure across Singapore?
+            </p>
           </div>
 
           <div class="control-block what-how-section">
             <span class="control-label">What &amp; How:</span>
-            <p class="summary-text">to be added</p>
+            <p class="summary-text">
+              WRF representative-week outputs are converted to hourly 500 m fields for temperature, wind, humidity, and
+              solar radiation.
+            </p>
           </div>
 
           <!-- Hidden spatial resolution for microclimate: WRF results are grid-level only -->
@@ -261,12 +260,12 @@
           </select>
 
           <div class="control-block metric-block">
-            <span class="control-label">Weather (WRF results)</span>
+            <span class="control-label">WRF representative-week weather</span>
             <div id="weatherButtons" class="segmented compact"></div>
           </div>
 
           <div class="control-block">
-            <span class="control-label">Weather period</span>
+            <span class="control-label">Representative week</span>
             <div id="periodButtons" class="segmented compact three"></div>
           </div>
 
@@ -290,7 +289,12 @@
 
           <div class="control-block data-source-section">
             <span class="control-label">Data source:</span>
-            <p class="summary-text">to be added</p>
+            <p class="summary-text">
+              <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6203923" target="_blank" rel="noopener noreferrer">
+                SSRN preprint
+              </a>
+              available; main paper text coming soon.
+            </p>
           </div>
         </div>
 
@@ -304,12 +308,16 @@
 
           <div class="control-block questions-section">
             <span class="control-label">Questions to answer:</span>
-            <p class="summary-text">to be added</p>
+            <p class="summary-text">
+              How much does microclimate-aware modelling change building energy use across seasons and districts?
+            </p>
           </div>
 
           <div class="control-block what-how-section">
             <span class="control-label">What &amp; How:</span>
-            <p class="summary-text">to be added</p>
+            <p class="summary-text">
+              Weekly simulations compare non-microclimate and WRF-informed cases at building and 500 m district scales.
+            </p>
           </div>
 
           <div class="control-block">
@@ -319,6 +327,28 @@
               <option value="grid">Aggregated grid cells (500 m × 500 m)</option>
               <option value="combined">Individual buildings + aggregated grid cells</option>
             </select>
+          </div>
+
+          <div class="control-block region-filter-block">
+            <span class="control-label">Building filter</span>
+            <details id="regionFilterDropdownEnergy" class="region-filter-dropdown">
+              <summary>
+                <span id="regionFilterSummaryEnergy" data-region-filter-summary>All regions</span>
+                <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+              </summary>
+              <div class="region-filter-menu">
+                <div class="region-filter-actions">
+                  <button id="regionSelectAllEnergy" type="button" data-region-select-all>Select all</button>
+                  <button id="regionClearAllEnergy" type="button" data-region-clear-all>Clear</button>
+                </div>
+                <div id="regionFilterListEnergy" class="region-filter-list" data-region-filter-list></div>
+              </div>
+            </details>
+          </div>
+
+          <div class="control-block metric-block">
+            <span class="control-label">Building type</span>
+            <div id="energyBuildingTypeButtons" class="segmented compact single"></div>
           </div>
 
           <div class="control-block metric-block">
@@ -340,7 +370,12 @@
 
           <div class="control-block data-source-section">
             <span class="control-label">Data source:</span>
-            <p class="summary-text">to be added</p>
+            <p class="summary-text">
+              <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6203923" target="_blank" rel="noopener noreferrer">
+                SSRN preprint
+              </a>
+              available; main paper text coming soon.
+            </p>
           </div>
         </div>
       </section>
@@ -403,7 +438,7 @@
     </script>
 
     <script src="src/config.js?v=20260509-weekly-energy-tilesets"></script>
-    <script src="src/app.js?v=20260512-lcz-v1"></script>
+    <script src="src/app.js?v=20260512-controls-v1"></script>
 
     <script>
       let microclimateDefaultsApplied = false;
@@ -579,7 +614,7 @@
           applyWeatherButtonOrder();
 
           const temperatureReady = clickButtonByText("weatherButtons", "T2m");
-          const hotReady = clickButtonByText("periodButtons", "Relative hot");
+          const hotReady = clickButtonByText("periodButtons", "Relatively hot season (May)");
 
           if ((temperatureReady && hotReady) || attempts > 20) {
             microclimateDefaultsApplied = true;
