@@ -294,9 +294,14 @@
       <div class="nav-title">Contents</div>
       <ul class="nav-list">
         <li><a href="#about">About</a></li>
-        <li><a href="#team">Team</a></li>
+        <li><a href="#objectives">Objectives</a></li>
         <li><a href="#data">Data source</a></li>
+        <li><a href="#microclimate">WRF microclimate</a></li>
+        <li><a href="#lcz">LCZ analysis</a></li>
+        <li><a href="#energy">Energy model</a></li>
+        <li><a href="#validation">Validation</a></li>
         <li><a href="#publications">Publications</a></li>
+        <li><a href="#team">Team</a></li>
       </ul>
     </aside>
 
@@ -308,49 +313,356 @@
       <div class="hero">
         <h1>BIOR Urban Digital Twins User Guide</h1>
         <p>
-          This guide introduces the Urban Digital Twins platform, including its project background,
-          team, data source, and related publications.
+          This guide explains the research objectives, data sources, microclimate modelling,
+          local climate zone analysis, and microclimate-informed urban building energy modelling
+          behind the Singapore Urban Digital Twins platform.
         </p>
       </div>
 
       <section id="about">
         <h2><i class="fa-solid fa-circle-info"></i>About</h2>
 
-          <p>
-            This BIOR Urban Digital Twin is an interactive web-based platform for urban-scale
-            microclimate-informed building energy analysis.
-          </p>
+        <p>
+          This BIOR Urban Digital Twin is an interactive web-based platform for urban-scale
+          microclimate-informed building energy analysis. It integrates building-level energy
+          modelling, urban morphology, measured electricity-use intensity, local climate zone
+          information, and WRF-derived microclimate fields.
+        </p>
 
-          <p>
-            It integrates building-level energy modelling, urban morphology,
-            measured electricity-use intensity, and WRF-derived microclimate fields to support
-            urban-scale analysis of building energy performance under different climate conditions.
-          </p>
-
-          <p>
-            Taking Singapore as a case study, the platform visualizes spatial variations in
-            microclimate exposure and building energy demand at both building and 500 m district
-            scales.
-          </p>
-
-          <p>
-            It provides an interactive framework for exploring how relatively hot,
-            relatively cool, and transitional climate conditions influence urban energy use and
-            supports future applications in microclimate-informed urban planning and building
-            energy assessment.
-          </p>
+        <p>
+          Taking Singapore as the case study, the platform visualizes spatial variations in
+          microclimate exposure and building energy demand at both individual-building and 500 m
+          district scales. It supports exploratory analysis of how relatively hot, relatively cool,
+          and transitional climate conditions influence energy use across building types and urban
+          contexts.
+        </p>
 
         <div class="info-grid">
           <div class="info-card">
-            <strong>Key Objectives</strong>
-            XXXX
+            <strong>Platform scale</strong>
+            The current Singapore dataset includes 118,782 buildings, 500 m district grids,
+            WRF-derived hourly microclimate fields, LCZ layers, simulated weekly energy use,
+            and measured annual EUI records where available.
           </div>
 
           <div class="info-card">
-            <strong>Key Questions to Answer</strong>
-            XXXX
+            <strong>Primary use</strong>
+            The map is designed for research communication, spatial diagnosis, and planning
+            discussion rather than real-time operational control.
           </div>
         </div>
+      </section>
+
+      <section id="objectives">
+        <h2><i class="fa-solid fa-bullseye"></i>Objectives and Research Questions</h2>
+
+        <p>
+          The platform is based on the Microclimate-Integrated Urban Building Energy Modeling
+          (MUBEM) framework developed in the related research paper. The framework links urban
+          climate simulation, multi-source geospatial data processing, building archetype
+          assignment, and city-scale EnergyPlus simulation.
+        </p>
+
+        <div class="info-grid">
+          <div class="info-card">
+            <strong>Objectives</strong>
+            <ul>
+              <li>Represent Singapore's building stock at individual-building and 500 m district scales.</li>
+              <li>Translate WRF microclimate outputs into localized weather inputs for energy simulation.</li>
+              <li>Compare energy use under non-microclimate and microclimate-informed conditions.</li>
+              <li>Identify building types, LCZ contexts, and districts that are more sensitive to local climate exposure.</li>
+            </ul>
+          </div>
+
+          <div class="info-card">
+            <strong>Research questions</strong>
+            <ul>
+              <li>Where do local microclimates most strongly change urban building energy demand?</li>
+              <li>How do temperature, humidity, wind, and shortwave radiation affect different building archetypes?</li>
+              <li>Which LCZ and district contexts show higher climate-energy sensitivity?</li>
+              <li>How do simulated results compare with measured annual EUI records from Singapore's benchmarking data?</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="data">
+        <h2><i class="fa-solid fa-database"></i>Data Source</h2>
+
+        <p>
+          The platform combines official records, open geospatial datasets, machine-learning
+          building-height products, WRF simulations, and the paper's derived modelling outputs.
+          The web map shows processed research layers rather than raw source files.
+        </p>
+
+        <h3>Building geometry, height, type, and age</h3>
+        <p>
+          Building footprints and attributes were compiled through multi-source data fusion.
+          Invalid footprint records smaller than 20 m<sup>2</sup> were excluded. Building height
+          was collected where available and completed using spatial overlap transfer and
+          K-nearest-neighbor imputation for missing records. Building type and construction-age
+          information were harmonized into Singapore-specific archetypes for energy modelling.
+        </p>
+
+        <ul>
+          <li>
+            Building footprints and volunteered map attributes:
+            <a href="https://www.openstreetmap.org/about/en" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>.
+          </li>
+          <li>
+            HDB public housing attributes, including completion year and floor information:
+            <a href="https://data.gov.sg/dataset/hdb-property-information" target="_blank" rel="noopener noreferrer">HDB Property Information on data.gov.sg</a>.
+          </li>
+          <li>
+            Commercial and public building benchmarking records:
+            <a href="https://www1.bca.gov.sg/buildsg/sustainability/regulatory-requirements-for-existing-buildings/bca-building-energy-benchmarking-and-disclosure" target="_blank" rel="noopener noreferrer">BCA Building Energy Benchmarking and Disclosure</a>.
+          </li>
+          <li>
+            Supplementary land-cover and built-environment context:
+            <a href="https://esa-worldcover.org/en" target="_blank" rel="noopener noreferrer">ESA WorldCover</a>
+            and
+            <a href="https://web.geoservice.dlr.de/web/datasets/wsf_evo" target="_blank" rel="noopener noreferrer">DLR World Settlement Footprint Evolution</a>.
+          </li>
+          <li>
+            Machine-learning based building-height reference:
+            <a href="https://www.nature.com/articles/s41597-024-03719-w" target="_blank" rel="noopener noreferrer">UT-GLOBUS</a>.
+          </li>
+        </ul>
+
+        <h3>Building archetypes</h3>
+        <p>
+          The Singapore building stock was classified into major archetypes and subcategories.
+          Residential buildings form the largest share, followed by public service, commercial,
+          office and amenities, and education. These archetypes define geometry assumptions,
+          schedules, internal loads, envelope properties, HVAC settings, and model calibration
+          factors used in the MUBEM workflow.
+        </p>
+
+        <ul>
+          <li>Public service: industrial, hospital, clinic, nursing home.</li>
+          <li>Commercial: retail, office, mixed development, business park, shophouse.</li>
+          <li>Education: institutes of higher learning and non-institutes of higher learning.</li>
+          <li>Residential: private apartment, HDB, landed property, hotel.</li>
+          <li>Office and amenities: community cultural, data center, sports, restaurant, supermarket.</li>
+        </ul>
+
+        <h3>Weather, LCZ, and validation data</h3>
+        <p>
+          The climate and validation layers combine WRF simulation outputs, LCZ morphology,
+          and observed weather or energy-performance references. Station observations from
+          Singapore's National Environment Agency were used to assess WRF temperature,
+          humidity, and wind simulations. BCA measured EUI records were used to validate and
+          calibrate the annual baseline energy model.
+        </p>
+
+        <ul>
+          <li>
+            Weather station observations:
+            <a href="https://data.gov.sg/collections/1459/view" target="_blank" rel="noopener noreferrer">NEA Realtime Weather Readings across Singapore</a>.
+          </li>
+          <li>
+            LCZ maps and urban morphology context:
+            <a href="https://www.wudapt.org/wudapt/" target="_blank" rel="noopener noreferrer">WUDAPT</a>
+            and
+            <a href="https://www.wudapt.org/data-overview/" target="_blank" rel="noopener noreferrer">WUDAPT data overview</a>.
+          </li>
+          <li>
+            Building energy benchmarking:
+            <a href="https://www1.bca.gov.sg/docs/default-source/docs-corp-buildsg/sustainability/bca-building-energy-benchmarking-report-2023.pdf" target="_blank" rel="noopener noreferrer">BCA Building Energy Benchmarking Report 2023</a>.
+          </li>
+        </ul>
+      </section>
+
+      <section id="microclimate">
+        <h2><i class="fa-solid fa-cloud-sun"></i>WRF Microclimate Data</h2>
+
+        <p>
+          The microclimate layers are derived from the
+          <a href="https://www.mmm.ucar.edu/models/wrf" target="_blank" rel="noopener noreferrer">Weather Research and Forecasting (WRF) Model</a>,
+          a mesoscale numerical weather prediction system widely used for atmospheric research
+          and weather modelling. In this project, WRF v4.4 was coupled with the BEP/BEM urban
+          canopy parameterization to represent urban surface processes and building-related heat
+          exchange.
+        </p>
+
+        <h3>Representative climate periods</h3>
+        <p>
+          Singapore has a tropical rainforest climate with persistent cooling demand. Instead of
+          winter and summer heating seasons, the platform uses three representative weeks based
+          on long-term official meteorological conditions:
+        </p>
+
+        <ul>
+          <li>Relatively hot season: May 16-22, representing the warmer May condition.</li>
+          <li>Relatively cool season: December 21-27, representing the cooler December condition.</li>
+          <li>Transitional season: October 16-22, representing a transition period between monsoon regimes.</li>
+        </ul>
+
+        <h3>Model resolution and variables</h3>
+        <p>
+          The WRF simulation used three nested domains over Singapore with grid sizes of 4.5 km,
+          1.5 km, and 0.5 km, 34 vertical levels, the Noah-MP land-surface model, and two-way
+          nesting. LCZ information was used in the fine domain to improve urban surface
+          representation.
+        </p>
+
+        <ul>
+          <li>T2m: 2 m air temperature, converted and displayed in degrees Celsius.</li>
+          <li>Wind10m: 10 m wind speed, calculated from U10 and V10 wind components.</li>
+          <li>RH: 2 m relative humidity, derived from WRF humidity and pressure variables.</li>
+          <li>Solar shortwave radiation: surface downwelling shortwave radiation from WRF SWDOWN.</li>
+        </ul>
+
+        <h3>From WRF to the map</h3>
+        <p>
+          WRF outputs are produced on a curvilinear numerical grid. The paper's workflow resampled
+          these outputs to a 500 m spatial grid using nearest-neighbor/KD-tree processing, exported
+          the results into GIS-ready layers, and converted them into web map tiles for interactive
+          visualization. The hourly slider in the platform shows the representative-week variation
+          of each microclimate variable.
+        </p>
+
+        <h3>Boundary-condition note</h3>
+        <p>
+          Two boundary-condition concepts are used in the workflow. At the atmospheric-model level,
+          WRF is initialized and constrained by large-scale meteorological fields during
+          preprocessing. At the building-energy level, the WRF-derived local variables above are
+          inserted into grid-specific EPW weather files, so that each building can be simulated
+          with a localized microclimate boundary condition rather than a single city-wide weather
+          file. If the raw WRF forcing archive is released later, cite the exact forcing product
+          used for the simulations, such as an official
+          <a href="https://oidc.rda.ucar.edu/datasets/d083002/detailed_metadata/" target="_blank" rel="noopener noreferrer">NCEP FNL</a>
+          or
+          <a href="https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5" target="_blank" rel="noopener noreferrer">ERA5</a>
+          dataset, as appropriate.
+        </p>
+      </section>
+
+      <section id="lcz">
+        <h2><i class="fa-solid fa-layer-group"></i>LCZ Analysis</h2>
+
+        <p>
+          Local Climate Zones (LCZs) classify urban and natural landscapes into standardized
+          thermal-morphological categories, such as compact high-rise, open mid-rise, low-rise,
+          dense trees, low plants, bare soil, and water. LCZ information helps explain why
+          districts with similar building functions may experience different microclimate and
+          energy responses.
+        </p>
+
+        <h3>How LCZ is used here</h3>
+        <ul>
+          <li>100 m LCZ maps describe fine-scale urban morphology and land-cover context.</li>
+          <li>500 m dominant-LCZ layers summarize the main LCZ type for each district grid.</li>
+          <li>LCZ composition statistics support interpretation of climate-energy sensitivity.</li>
+          <li>The region filter can be used with LCZ layers to compare selected planning areas.</li>
+        </ul>
+
+        <h3>Interpretation</h3>
+        <p>
+          In the Singapore analysis, high climate-energy sensitivity is often associated with
+          water, vegetation, bare-surface, and sparsely built contexts, especially during
+          relatively hot and transitional periods. Dense built-up LCZs are not always the most
+          sensitive because their local microclimate response depends on temperature, humidity,
+          wind, solar exposure, building type, and operational schedule.
+        </p>
+      </section>
+
+      <section id="energy">
+        <h2><i class="fa-solid fa-bolt"></i>MUBEM Energy Model</h2>
+
+        <p>
+          The energy layers are produced with a Microclimate-Integrated Urban Building Energy
+          Modeling workflow. The workflow converts GIS building attributes into EnergyPlus input
+          files, assigns building archetype parameters, generates localized weather files, runs
+          city-scale simulations, and aggregates the outputs to building and 500 m district scales.
+        </p>
+
+        <h3>Simulation engine and automation</h3>
+        <p>
+          The building energy simulations are based on
+          <a href="https://energyplus.net/" target="_blank" rel="noopener noreferrer">EnergyPlus</a>,
+          the U.S. Department of Energy whole-building energy simulation engine. Python automation,
+          including the
+          <a href="https://eppy.readthedocs.io/" target="_blank" rel="noopener noreferrer">eppy</a>
+          library, was used to edit IDF templates and batch-generate model inputs from GIS
+          attributes.
+        </p>
+
+        <h3>Model inputs</h3>
+        <ul>
+          <li>Building geometry: footprint, height, floor count, gross floor area, and shading context.</li>
+          <li>Building archetype: use type, operation schedules, internal load densities, envelope properties, and HVAC assumptions.</li>
+          <li>Weather: baseline typical meteorological year data and WRF-derived grid-specific EPW files.</li>
+          <li>Validation references: BCA measured EUI data for selected commercial and public building categories.</li>
+        </ul>
+
+        <h3>Energy layers in the platform</h3>
+        <ul>
+          <li>Weekly simulation data without microclimate for relatively hot, relatively cool, and transitional periods.</li>
+          <li>Weekly simulation data with WRF-derived microclimate for the same three periods.</li>
+          <li>Percentage difference between microclimate and non-microclimate simulations.</li>
+          <li>Measured yearly EUI from BCA records where matched data are available.</li>
+        </ul>
+
+        <h3>How to read the difference layers</h3>
+        <p>
+          Difference layers show the percentage change caused by replacing the baseline weather
+          file with localized WRF-derived microclimate conditions:
+          (&Delta;E = (E<sub>WRF</sub> - E<sub>baseline</sub>) / E<sub>baseline</sub> &times; 100%).
+          Positive values indicate higher simulated energy use under localized microclimate
+          conditions, while negative values indicate lower simulated energy use.
+        </p>
+      </section>
+
+      <section id="validation">
+        <h2><i class="fa-solid fa-check-double"></i>Validation and Interpretation</h2>
+
+        <p>
+          The research workflow evaluates both climate and energy modelling performance before
+          using the results for spatial interpretation.
+        </p>
+
+        <div class="info-grid">
+          <div class="info-card">
+            <strong>WRF validation</strong>
+            WRF temperature, relative humidity, and wind outputs were compared with observations
+            from six Singapore NEA meteorological stations. The paper reports stronger performance
+            for temperature and humidity, while wind speed remains more uncertain.
+          </div>
+
+          <div class="info-card">
+            <strong>Energy validation</strong>
+            Annual baseline UBEM results were evaluated against BCA measured EUI records. After
+            archetype-specific calibration, the Singapore validation achieved 29.1% CV-RMSE,
+            -1.4% NMBE, and 22.0% MAPE for the retained validation sample.
+          </div>
+        </div>
+
+        <h3>Important limitations</h3>
+        <ul>
+          <li>The platform visualizes representative-week scenarios rather than every day of the year.</li>
+          <li>Measured EUI is available only for matched benchmarking buildings, so many buildings have simulated data only.</li>
+          <li>Building type, height, age, and operation schedules are harmonized from multiple sources and include uncertainty.</li>
+          <li>WRF-derived wind fields are useful for spatial comparison but should be interpreted with more caution than temperature and humidity.</li>
+        </ul>
+      </section>
+
+      <section id="publications">
+        <h2><i class="fa-solid fa-book"></i>Publications</h2>
+
+        <p>
+          The platform is connected to the following research output. Full journal details will be
+          updated after publication.
+        </p>
+
+        <ul class="publication-list">
+          <li>
+            <strong>Microclimate-Integrated Urban Building Energy Modeling (MUBEM):
+            Spatiotemporal analysis of climate-driven energy use in Shanghai and Singapore.</strong>
+            Preprint available on
+            <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6203923" target="_blank" rel="noopener noreferrer">SSRN</a>.
+          </li>
+        </ul>
       </section>
 
       <section id="team">
@@ -382,62 +694,8 @@
         </ul>
       </section>
 
-      <section id="data">
-        <h2><i class="fa-solid fa-database"></i>Data Source</h2>
-
-        <p>
-          The platform combines multiple data sources to represent the built environment,
-          microclimate conditions, and building energy performance in Singapore.
-        </p>
-
-        <h3>Building data</h3>
-        <p>
-        Brief intro here.
-        </p>
-
-        <ul>
-          <li>Building footprints and 3D building geometry (XXXsource here)</li>
-          <li>Building archetype and land-use classification (XXX)</li>
-          <li>XXX</li>
-        </ul>
-
-        <h3>Microclimate data</h3>
-        <p>
-        Brief intro here.
-        </p>
-        <ul>
-          <li>Temperature (xxx)</li>
-          <li>Solar radiation</li>
-          <li>Wind-related variables</li>
-          <li>Relative humidity</li>
-        </ul>
-
-        <h3>Energy data</h3>
-        <p>
-        Brief intro here.
-        </p>
-        <ul>
-          <li>Building-level energy simulation results (XXX)</li>
-          <li>XXX</li>
-        </ul>
-      </section>
-
-      <section id="publications">
-        <h2><i class="fa-solid fa-book"></i>Publications</h2>
-
-        <p>
-          Publications related to this platform will be listed here:
-        </p>
-
-        <ul class="publication-list">
-          <li>
-            Publication information to be added.
-          </li>
-        </ul>
-      </section>
-
       <div class="footer">
-        © BIOR Lab, National University of Singapore.
+        &copy; BIOR Lab, National University of Singapore.
       </div>
     </main>
   </div>
