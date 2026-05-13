@@ -207,8 +207,12 @@ select:focus {
   color: #ffffff;
 }
 
-.nav-help {
+.nav-building-dt {
   margin-top: auto;
+}
+
+.nav-help {
+  margin-top: 10px;
 }
 
 /* Map occupies the right column only */
@@ -1209,8 +1213,18 @@ input[type="range"] {
 
 
 
+.guide-note {
+  margin-top: 18px;
+  color: #5f6b7a;
+  font-size: 16px;
+  line-height: 1.65;
+  font-weight: 400;
+}
+
 .guide-note a {
   color: #ef7c00;
+  font-size: 16px;
+  font-weight: 700;
   text-decoration: none;
 }
 
