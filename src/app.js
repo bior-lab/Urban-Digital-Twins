@@ -1249,6 +1249,16 @@ function buildingColorExpression() {
   return buildInterpolateExpression("buildings", state.metric, "rgba(94, 110, 124, 0.36)");
 }
 
+function buildingOpacityExpression() {
+  if (state.metric !== "eui_2023") return 0.88;
+  return [
+    "let",
+    "metric_value",
+    metricInputExpression("buildings", "eui_2023"),
+    ["case", ["!=", ["var", "metric_value"], -9999], 0.9, 0.045]
+  ];
+}
+
 function gridColorExpression() {
   return buildInterpolateExpression("grid_500m", state.metric, "rgba(86, 112, 130, 0.18)");
 }
@@ -1271,6 +1281,27 @@ function overviewColorExpression() {
     return buildInterpolateExpression("building_overview_500m", state.metric, fallback);
   }
   return buildArchetypeExpression();
+}
+
+function overviewOpacityExpression() {
+  const baseOpacity = [
+    "interpolate",
+    ["linear"],
+    ["to-number", ["get", "building_count"], 0],
+    0,
+    0.05,
+    20,
+    0.22,
+    150,
+    0.48
+  ];
+  if (state.metric !== "eui_2023") return baseOpacity;
+  return [
+    "let",
+    "metric_value",
+    metricInputExpression("building_overview_500m", "eui_2023"),
+    ["case", ["!=", ["var", "metric_value"], -9999], baseOpacity, 0.035]
+  ];
 }
 
 function heightExpression() {
@@ -1444,6 +1475,7 @@ function updateMapStyle() {
   if (state.map.getLayer("buildings-extrusion")) {
     state.map.setPaintProperty("buildings-extrusion", "fill-extrusion-color", buildingColorExpression());
     state.map.setPaintProperty("buildings-extrusion", "fill-extrusion-height", heightExpression());
+    state.map.setPaintProperty("buildings-extrusion", "fill-extrusion-opacity", buildingOpacityExpression());
   }
   if (state.map.getLayer("building-selected")) {
     state.map.setPaintProperty("building-selected", "fill-extrusion-height", heightExpression());
@@ -1465,6 +1497,7 @@ function updateMapStyle() {
   }
   if (state.map.getLayer("building-overview-fill")) {
     state.map.setPaintProperty("building-overview-fill", "fill-color", overviewColorExpression());
+    state.map.setPaintProperty("building-overview-fill", "fill-opacity", overviewOpacityExpression());
   }
   updateLayerVisibility();
 }
@@ -1985,17 +2018,7 @@ async function addLayers() {
       maxzoom: 10.8,
       paint: {
         "fill-color": overviewColorExpression(),
-        "fill-opacity": [
-          "interpolate",
-          ["linear"],
-          ["to-number", ["get", "building_count"], 0],
-          0,
-          0.05,
-          20,
-          0.22,
-          150,
-          0.48
-        ]
+        "fill-opacity": overviewOpacityExpression()
       }
     });
     state.map.addLayer({
@@ -2142,7 +2165,7 @@ async function addLayers() {
       "fill-extrusion-color": buildingColorExpression(),
       "fill-extrusion-height": heightExpression(),
       "fill-extrusion-base": 0,
-      "fill-extrusion-opacity": 0.88,
+      "fill-extrusion-opacity": buildingOpacityExpression(),
       "fill-extrusion-vertical-gradient": true
     }
   });
