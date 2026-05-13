@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User guide | Urban Digital Twins</title>
+
+  <link rel="icon" href="../icon.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <style>
+    :root {
+      --nus-blue: #003d7c;
+      --nus-orange: #ef7c00;
+      --text-main: #1f2933;
+      --text-muted: #5f6b7a;
+      --bg-main: #f5f7fb;
+      --bg-card: #ffffff;
+      --border: #e3e8ef;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.65;
+    }
+
+    .page {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 32px 24px;
+      background: #ffffff;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 36px;
+    }
+
+    .brand img {
+      width: 46px;
+      height: auto;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--nus-blue);
+      line-height: 1.25;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 28px;
+      color: var(--nus-blue);
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .back-link:hover {
+      color: var(--nus-orange);
+    }
+
+    .nav-title {
+      margin: 20px 0 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .nav-list a {
+      display: block;
+      padding: 8px 10px;
+      border-radius: 8px;
+      color: #374151;
+      font-size: 15px;
+      text-decoration: none;
+    }
+
+    .nav-list a:hover {
+      background: #eef5ff;
+      color: var(--nus-blue);
+    }
+
+    .content {
+      padding: 56px 72px 80px;
+      max-width: 1180px;
+    }
+
+    .hero {
+      margin-bottom: 34px;
+    }
+
+    .eyebrow {
+      margin-bottom: 10px;
+      color: var(--nus-orange);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0 0 16px;
+      color: var(--nus-blue);
+      font-size: 42px;
+      line-height: 1.15;
+    }
+
+    .hero p {
+      max-width: 820px;
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 17px;
+    }
+
+    section {
+      margin-top: 28px;
+      padding: 34px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    h2 {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 0 18px;
+      color: var(--nus-blue);
+      font-size: 26px;
+    }
+
+    h2 i {
+      color: var(--nus-orange);
+      font-size: 22px;
+    }
+
+    h3 {
+      margin: 26px 0 10px;
+      color: #253041;
+      font-size: 18px;
+    }
+
+    p {
+      margin: 0 0 14px;
+    }
+
+    ul {
+      margin: 10px 0 0;
+      padding-left: 22px;
+    }
+
+    li {
+      margin: 7px 0;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .info-card {
+      padding: 18px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+    }
+
+    .info-card strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--nus-blue);
+    }
+
+    .publication-list {
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .publication-list li {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .publication-list li:last-child {
+      border-bottom: none;
+    }
+
+    .footer {
+      margin-top: 36px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .page {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: relative;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .content {
+        padding: 36px 22px 60px;
+      }
+
+      h1 {
+        font-size: 34px;
+      }
+
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="../bior_logo.png" alt="BIOR Lab logo" />
+        <div class="brand-title">
+          Urban Digital Twins<br />
+          User Guide
+        </div>
+      </div>
+
+      <a class="back-link" href="../">
+        <i class="fa-solid fa-arrow-left"></i>
+        Back to map
+      </a>
+
+      <div class="nav-title">Contents</div>
+      <ul class="nav-list">
+        <li><a href="#about">About</a></li>
+        <li><a href="#team">Team</a></li>
+        <li><a href="#data">Data</a></li>
+        <li><a href="#publications">Publications</a></li>
+      </ul>
+    </aside>
+
+    <main class="content">
+      <div class="hero">
+        <div class="eyebrow">User guide</div>
+        <h1>Urban Digital Twins</h1>
+        <p>
+          This guide introduces the Urban Digital Twins platform, including its project background,
+          team, data layers, and related publications.
+        </p>
+      </div>
+
+      <section id="about">
+        <h2><i class="fa-solid fa-circle-info"></i>About</h2>
+
+        <p>
+          Urban Digital Twins is an interactive web-based platform for urban-scale
+          microclimate-informed building energy analysis. The platform integrates building-level
+          energy modelling, urban morphology, measured electricity-use intensity, and
+          WRF-derived microclimate fields to support spatial analysis of building energy
+          performance under different climate conditions.
+        </p>
+
+        <p>
+          Taking Singapore as a case study, the platform visualizes spatial variations in
+          microclimate exposure and building energy demand at both building and district scales.
+          It provides an interactive framework for exploring how relatively hot, relatively cool,
+          and transitional climatic conditions influence urban energy use.
+        </p>
+
+        <div class="info-grid">
+          <div class="info-card">
+            <strong>Main purpose</strong>
+            To support microclimate-informed urban planning, building energy assessment,
+            and climate-responsive decision-making.
+          </div>
+
+          <div class="info-card">
+            <strong>Platform functions</strong>
+            Interactive 3D map visualization, building-level data exploration,
+            microclimate layer comparison, and energy-use analysis.
+          </div>
+        </div>
+      </section>
+
+      <section id="team">
+        <h2><i class="fa-solid fa-users"></i>Team</h2>
+
+        <h3>Project lead</h3>
+        <p>
+          <strong>Dr. Maomao Hu</strong><br />
+          Building Informatics and Operations Research (BIOR) Lab<br />
+          National University of Singapore
+        </p>
+
+        <h3>Research and platform development</h3>
+        <p>
+          <strong>Pengyu Jie</strong>
+        </p>
+
+        <h3>Affiliation</h3>
+        <p>
+          This project is developed by the Building Informatics and Operations Research
+          (BIOR) Lab at the National University of Singapore.
+        </p>
+      </section>
+
+      <section id="data">
+        <h2><i class="fa-solid fa-database"></i>Data</h2>
+
+        <p>
+          The platform combines multiple data sources to represent the built environment,
+          microclimate conditions, and building energy performance in Singapore.
+        </p>
+
+        <h3>Building data</h3>
+        <ul>
+          <li>Building footprints and 3D building geometry</li>
+          <li>Building archetype and land-use classification</li>
+          <li>District-scale spatial aggregation</li>
+        </ul>
+
+        <h3>Microclimate data</h3>
+        <ul>
+          <li>Temperature</li>
+          <li>Solar radiation</li>
+          <li>Wind-related variables</li>
+          <li>Relative humidity</li>
+          <li>Seasonal scenarios, including relatively hot, relatively cool, and transitional conditions</li>
+        </ul>
+
+        <h3>Energy data</h3>
+        <ul>
+          <li>Building-level energy simulation results</li>
+          <li>Measured electricity-use intensity benchmarks</li>
+          <li>District-scale energy-use patterns</li>
+        </ul>
+      </section>
+
+      <section id="publications">
+        <h2><i class="fa-solid fa-book"></i>Publications</h2>
+
+        <p>
+          Publications related to this platform will be listed here. This section can include
+          journal papers, conference papers, technical reports, datasets, and software references.
+        </p>
+
+        <ul class="publication-list">
+          <li>
+            <strong>Urban Digital Twins for Microclimate-Building-Energy Analysis.</strong><br />
+            Publication information to be added.
+          </li>
+
+          <li>
+            <strong>Microclimate-informed urban building energy modelling.</strong><br />
+            Publication information to be added.
+          </li>
+        </ul>
+      </section>
+
+      <div class="footer">
+        © BIOR Lab, National University of Singapore.
+      </div>
+    </main>
+  </div>
+</body>
+</html>
