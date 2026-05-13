@@ -4,27 +4,27 @@ window.SG_ENERGY_MAP_CONFIG = {
     "p",
     "k",
     ".",
-    "eyJ1IjoianB5anB5IiwiYSI6ImNtbTJ2OG9sdTBjMzUycm9sbDNyczFlbjcifQ",
+    "eyJ1IjoibnVzLWJpb3IiLCJhIjoiY21vdjR0cTdqMDNsYzJzcTUzcnYyMHRudyJ9",
     ".",
-    "yRMEcO0xjqjpbA7GjC1wqw"
+    "-cO66etHk9AOgpYO2gb2yA"
   ],
   styleUrl: "mapbox://styles/mapbox/light-v11",
   preferVectorTiles: true,
   mapboxTilesets: {
     buildings: {
-      url: "mapbox://jpyjpy.ce6ho8wl",
+      url: "mapbox://nus-bior.7xmymq8g",
       sourceLayer: ""
     },
     grid: {
-      url: "mapbox://jpyjpy.3twx94uo",
+      url: "mapbox://nus-bior.0siwr5r9",
       sourceLayer: ""
     },
     weather: {
-      url: "mapbox://jpyjpy.0yv50dg3",
+      url: "mapbox://nus-bior.7x1jhs36",
       sourceLayer: ""
     },
     buildingOverview: {
-      url: "mapbox://jpyjpy.b7q5jled",
+      url: "mapbox://nus-bior.coxvspif",
       sourceLayer: ""
     }
   }
