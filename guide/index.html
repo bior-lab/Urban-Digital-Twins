@@ -52,22 +52,11 @@
       overflow-y: auto;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+    .sidebar-title {
       margin-bottom: 36px;
-    }
-
-    .brand img {
-      width: 46px;
-      height: auto;
-    }
-
-    .brand-title {
-      font-size: 16px;
-      font-weight: 700;
       color: var(--nus-blue);
+      font-size: 18px;
+      font-weight: 800;
       line-height: 1.25;
     }
 
@@ -75,7 +64,7 @@
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 28px;
+      margin-bottom: 48px;
       color: var(--nus-blue);
       font-size: 14px;
       font-weight: 700;
@@ -116,8 +105,21 @@
     }
 
     .content {
-      padding: 56px 72px 80px;
+      padding: 36px 72px 80px;
       max-width: 1180px;
+    }
+
+    .top-logo {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      margin-bottom: 34px;
+    }
+
+    .top-logo img {
+      width: 360px;
+      max-width: 100%;
+      height: auto;
     }
 
     .hero {
@@ -242,7 +244,11 @@
       }
 
       .content {
-        padding: 36px 22px 60px;
+        padding: 28px 22px 60px;
+      }
+
+      .top-logo img {
+        width: 300px;
       }
 
       h1 {
@@ -259,12 +265,9 @@
 <body>
   <div class="page">
     <aside class="sidebar">
-      <div class="brand">
-        <img src="../bior_logo.png" alt="BIOR Lab logo" />
-        <div class="brand-title">
-          Urban Digital Twins<br />
-          User Guide
-        </div>
+      <div class="sidebar-title">
+        Urban Digital Twins<br />
+        User Guide
       </div>
 
       <a class="back-link" href="../">
@@ -276,12 +279,16 @@
       <ul class="nav-list">
         <li><a href="#about">About</a></li>
         <li><a href="#team">Team</a></li>
-        <li><a href="#data">Data</a></li>
+        <li><a href="#data">Data source</a></li>
         <li><a href="#publications">Publications</a></li>
       </ul>
     </aside>
 
     <main class="content">
+      <div class="top-logo">
+        <img src="../bior_logo.png" alt="BIOR Lab logo" />
+      </div>
+
       <div class="hero">
         <div class="eyebrow">User guide</div>
         <h1>Urban Digital Twins</h1>
@@ -311,15 +318,13 @@
 
         <div class="info-grid">
           <div class="info-card">
-            <strong>Main purpose</strong>
-            To support microclimate-informed urban planning, building energy assessment,
-            and climate-responsive decision-making.
+            <strong>Key Objectives</strong>
+            XXXX
           </div>
 
           <div class="info-card">
-            <strong>Platform functions</strong>
-            Interactive 3D map visualization, building-level data exploration,
-            microclimate layer comparison, and energy-use analysis.
+            <strong>Key Questions to Answer</strong>
+            XXXX
           </div>
         </div>
       </section>
@@ -327,27 +332,34 @@
       <section id="team">
         <h2><i class="fa-solid fa-users"></i>Team</h2>
 
-        <h3>Project lead</h3>
         <p>
-          <strong>Dr. Maomao Hu</strong><br />
-          Building Informatics and Operations Research (BIOR) Lab<br />
-          National University of Singapore
+          This project is developed and maintained by the
+          <a href="https://maomaohu.net/" target="_blank" rel="noopener noreferrer">
+            <strong>Building Informatics and Operations Research (BIOR) Lab</strong>
+          </a>
+          at the National University of Singapore.
         </p>
 
-        <h3>Research and platform development</h3>
-        <p>
-          <strong>Pengyu Jie</strong>
+        <p class="team-intro">
+          The team members include:
         </p>
 
-        <h3>Affiliation</h3>
-        <p>
-          This project is developed by the Building Informatics and Operations Research
-          (BIOR) Lab at the National University of Singapore.
-        </p>
+        <ul class="team-list">
+          <li>
+            <a href="https://maomaohu.net/members/pengyujie/" target="_blank" rel="noopener noreferrer">
+              Pengyu Jie
+            </a>
+          </li>
+          <li>
+            <a href="https://maomaohu.net/members/maomaohu/" target="_blank" rel="noopener noreferrer">
+              Maomao Hu (PI)
+            </a>
+          </li>
+        </ul>
       </section>
 
       <section id="data">
-        <h2><i class="fa-solid fa-database"></i>Data</h2>
+        <h2><i class="fa-solid fa-database"></i>Data Source</h2>
 
         <p>
           The platform combines multiple data sources to represent the built environment,
@@ -382,20 +394,14 @@
         <h2><i class="fa-solid fa-book"></i>Publications</h2>
 
         <p>
-          Publications related to this platform will be listed here. This section can include
-          journal papers, conference papers, technical reports, datasets, and software references.
+          Publications related to this platform will be listed here：
         </p>
 
         <ul class="publication-list">
           <li>
-            <strong>Urban Digital Twins for Microclimate-Building-Energy Analysis.</strong><br />
             Publication information to be added.
           </li>
 
-          <li>
-            <strong>Microclimate-informed urban building energy modelling.</strong><br />
-            Publication information to be added.
-          </li>
         </ul>
       </section>
 
