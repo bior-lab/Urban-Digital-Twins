@@ -1206,3 +1206,15 @@ input[type="range"] {
   outline: 3px solid rgba(0, 61, 124, 0.18);
   outline-offset: 2px;
 }
+
+
+
+.guide-note a {
+  color: #ef7c00;
+  text-decoration: none;
+}
+
+.guide-note a:hover {
+  color: #003d7c;
+  text-decoration: underline;
+}
