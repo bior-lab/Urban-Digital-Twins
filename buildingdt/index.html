@@ -41,6 +41,10 @@
         display: block;
       }
 
+      .nav-urban-dt {
+        margin-top: auto;
+      }
+
       .login-block {
         margin-top: 28px;
       }
@@ -79,6 +83,10 @@
       }
 
       @media (max-width: 860px) {
+        .nav-urban-dt {
+          margin-top: 0;
+        }
+
         .building-dt-visual {
           order: 2;
           grid-column: auto;
@@ -101,14 +109,14 @@
     <main id="app">
       <!-- Left navigation menu -->
       <nav class="app-nav" aria-label="Main navigation">
-        <a class="app-nav-item" href="../">
-          <span class="nav-icon"><i class="fa-solid fa-house"></i></span>
-          <span>Urban DT</span>
-        </a>
-
         <a class="app-nav-item active" href="./">
           <span class="nav-icon"><i class="fa-solid fa-cube"></i></span>
           <span>Building DT</span>
+        </a>
+
+        <a class="app-nav-item nav-urban-dt" href="../">
+          <span class="nav-icon"><i class="fa-solid fa-city"></i></span>
+          <span>Urban DT</span>
         </a>
       </nav>
 
@@ -128,7 +136,7 @@
             <h1 class="brand-title">
               <span class="title-highlight">Building Digital Twins:</span><br />
               <span class="title-main">
-                A Building-Scale Digital Twin Platform for Smart Building Operations
+                A Building-Scale DT Platform for Smart Building Operations
               </span>
             </h1>
           </div>
@@ -144,9 +152,9 @@
           </div>
 
           <div class="control-block">
-            <span class="control-label">Connection to Urban Digital Twins</span>
+            <span class="control-label">Urban DT vs. Building DT</span>
             <p class="summary-text">
-              While the BIOR Urban Digital Twin focuses on urban-scale microclimate-informed
+              While the BIOR Urban DT focuses on urban-scale microclimate-informed
               building energy analysis, Building DT focuses on building-scale data integration
               and operational intelligence. Together, they support multi-scale digitalization of
               the built environment.
