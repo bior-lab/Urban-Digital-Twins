@@ -341,6 +341,8 @@ const state = {
   sourceTypes: {},
   sourceFields: {},
   searchIndex: null,
+  buildingTypeRegionCounts: null,
+  buildingTypeFilterInitialized: false,
   weatherManifest: null,
   weatherSeriesCache: {},
   weatherSeries: null,
@@ -505,12 +507,41 @@ function buildingTypeLabels() {
   return state.metadata?.building_type_labels || TYPE_LABELS;
 }
 
-function buildingTypeCounts() {
+function globalBuildingTypeCounts() {
   return state.metadata?.layers?.buildings?.building_type_counts || {};
+}
+
+function zeroBuildingTypeCounts() {
+  return Object.fromEntries(allBuildingTypes().map((type) => [type, 0]));
+}
+
+function buildingTypeCounts() {
+  const globalCounts = globalBuildingTypeCounts();
+  if (!regionFeatures().length || allRegionsSelected()) return globalCounts;
+  if (!selectedRegionCount()) return zeroBuildingTypeCounts();
+
+  const regionCounts = state.buildingTypeRegionCounts?.regions;
+  if (!regionCounts) return globalCounts;
+  const counts = {};
+  state.selectedRegionIds.forEach((regionId) => {
+    const perType = regionCounts[regionId]?.counts || {};
+    Object.entries(perType).forEach(([type, count]) => {
+      counts[type] = (counts[type] || 0) + Number(count || 0);
+    });
+  });
+  return counts;
 }
 
 function allBuildingTypes() {
   return Object.values(buildingTypeGroups()).flatMap((group) => group.types || []);
+}
+
+function buildingCountForTypes(counts, types) {
+  return (types || []).reduce((sum, type) => sum + Number(counts[type] || 0), 0);
+}
+
+function selectedBuildingTypeBuildingCount(counts = buildingTypeCounts()) {
+  return buildingCountForTypes(counts, Array.from(state.selectedBuildingTypes));
 }
 
 function selectedBuildingTypeCount() {
@@ -714,16 +745,19 @@ function syncRegionCheckboxes() {
 
 function updateBuildingTypeFilterSummary() {
   if (!els.buildingTypeFilterSummary) return;
-  const total = allBuildingTypes().length;
-  const count = selectedBuildingTypeCount();
-  if (!total) {
+  const totalTypes = allBuildingTypes().length;
+  const selectedTypes = selectedBuildingTypeCount();
+  const counts = buildingTypeCounts();
+  const selectedBuildings = selectedBuildingTypeBuildingCount(counts);
+  const regionBuildings = buildingCountForTypes(counts, allBuildingTypes());
+  if (!totalTypes) {
     els.buildingTypeFilterSummary.textContent = "Loading building types...";
-  } else if (count === total) {
-    els.buildingTypeFilterSummary.textContent = `All building types (${total})`;
-  } else if (!count) {
+  } else if (selectedTypes === totalTypes) {
+    els.buildingTypeFilterSummary.textContent = `All building types (${compactCount(regionBuildings)} buildings)`;
+  } else if (!selectedTypes) {
     els.buildingTypeFilterSummary.textContent = "No building types selected";
   } else {
-    els.buildingTypeFilterSummary.textContent = `${count} of ${total} building types`;
+    els.buildingTypeFilterSummary.textContent = `${selectedTypes} of ${totalTypes} types (${compactCount(selectedBuildings)} buildings)`;
   }
 }
 
@@ -740,16 +774,20 @@ function renderBuildingTypeFilter() {
     updateBuildingTypeFilterSummary();
     return;
   }
-  state.selectedBuildingTypes = new Set(allTypes);
+  if (!state.buildingTypeFilterInitialized) {
+    state.selectedBuildingTypes = new Set(allTypes);
+    state.buildingTypeFilterInitialized = true;
+  }
   els.buildingTypeFilterList.innerHTML = Object.entries(groups)
     .map(([groupId, group]) => {
       const types = group.types || [];
-      const groupCount = types.reduce((sum, type) => sum + Number(counts[type] || 0), 0);
+      const groupCount = buildingCountForTypes(counts, types);
       const typeMarkup = types
         .map((type) => {
+          const checked = state.selectedBuildingTypes.has(type) ? "checked" : "";
           return `
             <label class="region-filter-option building-type-filter-option">
-              <input type="checkbox" value="${htmlSafe(type)}" data-building-type="${htmlSafe(type)}" checked />
+              <input type="checkbox" value="${htmlSafe(type)}" data-building-type="${htmlSafe(type)}" ${checked} />
               <span>${htmlSafe(labels[type] || type)}</span>
               <strong>${compactCount(counts[type] || 0)}</strong>
             </label>
@@ -760,16 +798,16 @@ function renderBuildingTypeFilter() {
         <div class="region-filter-section">
           <div class="region-filter-section-title">${htmlSafe(group.label)} (${compactCount(groupCount)})</div>
           <label class="region-filter-option region-filter-group-option">
-            <input type="checkbox" data-building-type-group="${htmlSafe(groupId)}" checked />
+            <input type="checkbox" data-building-type-group="${htmlSafe(groupId)}" />
             <span>All ${htmlSafe(group.label)}</span>
-            <strong>${types.length}</strong>
+            <strong>${compactCount(groupCount)}</strong>
           </label>
           ${typeMarkup}
         </div>
       `;
     })
     .join("");
-  updateBuildingTypeFilterSummary();
+  syncBuildingTypeCheckboxes();
 }
 
 function syncBuildingTypeCheckboxes() {
@@ -1219,6 +1257,17 @@ async function loadLczData() {
   if (!rawResponse.ok) throw new Error(`LCZ 100 m layer request failed: ${rawResponse.status}`);
   normalizeLczGridStats(await gridResponse.json());
   state.lczRaw = await rawResponse.json();
+}
+
+async function loadBuildingTypeRegionCounts() {
+  try {
+    const response = await fetch("data/building_type_region_counts.json", { cache: "no-store" });
+    if (!response.ok) throw new Error(`Building type region counts request failed: ${response.status}`);
+    state.buildingTypeRegionCounts = await response.json();
+  } catch (error) {
+    console.warn(error);
+    state.buildingTypeRegionCounts = null;
+  }
 }
 
 function showLoading(message) {
@@ -2390,6 +2439,9 @@ async function loadData() {
   state.metadata = await metadataResponse.json();
   els.buildingCount.textContent = compactCount(state.metadata.layers.buildings.count);
   els.gridCount.textContent = compactCount(state.metadata.layers.grid_500m.count);
+
+  showLoading("Loading building type summaries...");
+  await loadBuildingTypeRegionCounts();
   renderBuildingTypeFilter();
 
   showLoading("Loading Singapore regions...");
@@ -2397,6 +2449,7 @@ async function loadData() {
   if (!regionResponse.ok) throw new Error(`Region request failed: ${regionResponse.status}`);
   state.regions = await regionResponse.json();
   renderRegionFilter();
+  renderBuildingTypeFilter();
 
   showLoading("Loading LCZ analysis layers...");
   await loadLczData();
@@ -2545,6 +2598,7 @@ function bindEvents() {
           else state.selectedRegionIds.delete(id);
         });
         syncRegionCheckboxes();
+        renderBuildingTypeFilter();
         applyRegionFilter();
         updateLegend();
         if (input.checked) focusRegionIds(ids, 11.9);
@@ -2554,6 +2608,7 @@ function bindEvents() {
       if (input.checked) state.selectedRegionIds.add(id);
       else state.selectedRegionIds.delete(id);
       syncRegionCheckboxes();
+      renderBuildingTypeFilter();
       applyRegionFilter();
       updateLegend();
       if (input.checked) focusRegionIds([id], 13.8);
@@ -2563,6 +2618,7 @@ function bindEvents() {
     button.addEventListener("click", () => {
       state.selectedRegionIds = new Set(regionIds());
       syncRegionCheckboxes();
+      renderBuildingTypeFilter();
       applyRegionFilter();
       updateLegend();
     });
@@ -2571,6 +2627,7 @@ function bindEvents() {
     button.addEventListener("click", () => {
       state.selectedRegionIds = new Set();
       syncRegionCheckboxes();
+      renderBuildingTypeFilter();
       applyRegionFilter();
       updateLegend();
     });
