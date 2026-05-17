@@ -82,7 +82,7 @@ const METRICS = {
     label: "Relatively cold season (Dec, non-microclimate)",
     shortLabel: "Relatively cold season (Dec, non-microclimate)",
     category: "energy",
-    unit: "kWh",
+    unit: "kWh/week",
     fieldByLayer: { buildings: "cold_tmy_kwh", grid_500m: "cold_tmy_kwh" },
     fallbackFieldByLayer: { buildings: "typical_week_energy_kwh", grid_500m: "winter_energy_kwh" },
     ramp: ENERGY_WEEKLY_RAMP
@@ -91,7 +91,7 @@ const METRICS = {
     label: "Relatively hot season (May, non-microclimate)",
     shortLabel: "Relatively hot season (May, non-microclimate)",
     category: "energy",
-    unit: "kWh",
+    unit: "kWh/week",
     fieldByLayer: { buildings: "hot_tmy_kwh", grid_500m: "hot_tmy_kwh" },
     fallbackFieldByLayer: { buildings: "typical_week_energy_kwh", grid_500m: "summer_energy_kwh" },
     ramp: ENERGY_WEEKLY_RAMP
@@ -100,7 +100,7 @@ const METRICS = {
     label: "Transitional season (Oct, non-microclimate)",
     shortLabel: "Transitional season (Oct, non-microclimate)",
     category: "energy",
-    unit: "kWh",
+    unit: "kWh/week",
     fieldByLayer: { buildings: "trans_tmy_kwh", grid_500m: "trans_tmy_kwh" },
     fallbackFieldByLayer: { buildings: "typical_week_energy_kwh", grid_500m: "autumn_energy_kwh" },
     ramp: ENERGY_WEEKLY_RAMP
@@ -109,7 +109,7 @@ const METRICS = {
     label: "Relatively hot season (May, microclimate)",
     shortLabel: "Relatively hot season (May, microclimate)",
     category: "energy",
-    unit: "kWh",
+    unit: "kWh/week",
     fieldByLayer: { buildings: "hot_micro_kwh", grid_500m: "hot_micro_kwh" },
     fallbackBaseFieldByLayer: { buildings: "typical_week_energy_kwh", grid_500m: "summer_energy_kwh" },
     fallbackPctFieldByLayer: { buildings: "summer_pct", grid_500m: "summer_pct" },
@@ -120,7 +120,7 @@ const METRICS = {
     label: "Relatively cold season (Dec, microclimate)",
     shortLabel: "Relatively cold season (Dec, microclimate)",
     category: "energy",
-    unit: "kWh",
+    unit: "kWh/week",
     fieldByLayer: { buildings: "cold_micro_kwh", grid_500m: "cold_micro_kwh" },
     fallbackBaseFieldByLayer: { buildings: "typical_week_energy_kwh", grid_500m: "winter_energy_kwh" },
     fallbackPctFieldByLayer: { buildings: "winter_pct", grid_500m: "winter_pct" },
@@ -131,7 +131,7 @@ const METRICS = {
     label: "Transitional season (Oct, microclimate)",
     shortLabel: "Transitional season (Oct, microclimate)",
     category: "energy",
-    unit: "kWh",
+    unit: "kWh/week",
     fieldByLayer: { buildings: "trans_micro_kwh", grid_500m: "trans_micro_kwh" },
     fallbackBaseFieldByLayer: { buildings: "typical_week_energy_kwh", grid_500m: "autumn_energy_kwh" },
     fallbackPctFieldByLayer: { buildings: "autumn_pct", grid_500m: "autumn_pct" },
@@ -326,6 +326,7 @@ const state = {
   grid: null,
   regions: null,
   selectedRegionIds: new Set(),
+  selectedBuildingTypes: new Set(),
   mode: "combined",
   metric: "energy_hot",
   period: "hot",
@@ -371,7 +372,10 @@ const els = {
   regionClearAll: document.getElementById("regionClearAll"),
   lczLayerButtons: document.getElementById("lczLayerButtons"),
   weatherButtons: document.getElementById("weatherButtons"),
-  energyBuildingTypeButtons: document.getElementById("energyBuildingTypeButtons"),
+  buildingTypeFilterSummary: document.getElementById("buildingTypeFilterSummaryEnergy"),
+  buildingTypeFilterList: document.getElementById("buildingTypeFilterListEnergy"),
+  buildingTypeSelectAll: document.getElementById("buildingTypeSelectAllEnergy"),
+  buildingTypeClearAll: document.getElementById("buildingTypeClearAllEnergy"),
   energyMetricSelect: document.getElementById("energyMetricSelect"),
   measuredEnergyButtons: document.getElementById("measuredEnergyButtons"),
   periodButtons: document.getElementById("periodButtons"),
@@ -493,6 +497,38 @@ function regionIds() {
   return regionFeatures().map(regionId);
 }
 
+function buildingTypeGroups() {
+  return state.metadata?.building_type_groups || BUILDING_TYPE_GROUPS;
+}
+
+function buildingTypeLabels() {
+  return state.metadata?.building_type_labels || TYPE_LABELS;
+}
+
+function buildingTypeCounts() {
+  return state.metadata?.layers?.buildings?.building_type_counts || {};
+}
+
+function allBuildingTypes() {
+  return Object.values(buildingTypeGroups()).flatMap((group) => group.types || []);
+}
+
+function selectedBuildingTypeCount() {
+  return state.selectedBuildingTypes.size;
+}
+
+function allBuildingTypesSelected() {
+  const types = allBuildingTypes();
+  return types.length > 0 && selectedBuildingTypeCount() === types.length;
+}
+
+function selectedBuildingTypeGroupIds() {
+  const selected = state.selectedBuildingTypes;
+  return Object.entries(buildingTypeGroups())
+    .filter(([, group]) => (group.types || []).some((type) => selected.has(type)))
+    .map(([groupId]) => groupId);
+}
+
 function selectedRegionCount() {
   return state.selectedRegionIds.size;
 }
@@ -548,10 +584,39 @@ function buildingRegionFilterExpression() {
   return null;
 }
 
+function buildingTypeFalseFilter() {
+  return ["==", ["get", "building_type"], "__none__"];
+}
+
+function buildingTypeFilterExpression() {
+  const types = allBuildingTypes();
+  if (!types.length || allBuildingTypesSelected()) return null;
+  if (!selectedBuildingTypeCount()) return buildingTypeFalseFilter();
+  return ["in", ["get", "building_type"], ["literal", Array.from(state.selectedBuildingTypes)]];
+}
+
+function buildingOverviewTypeFilterExpression() {
+  const types = allBuildingTypes();
+  if (!types.length || allBuildingTypesSelected()) return null;
+  if (!selectedBuildingTypeCount()) return ["==", ["get", "dominant_archetype"], "__none__"];
+  const groupIds = selectedBuildingTypeGroupIds();
+  if (!groupIds.length) return ["==", ["get", "dominant_archetype"], "__none__"];
+  return ["in", ["coalesce", ["get", "dominant_archetype"], "none"], ["literal", groupIds]];
+}
+
+function combineFilters(...filters) {
+  const activeFilters = filters.filter(Boolean);
+  if (!activeFilters.length) return null;
+  return activeFilters.length === 1 ? activeFilters[0] : ["all", ...activeFilters];
+}
+
+function buildingFilterExpression() {
+  return combineFilters(buildingRegionFilterExpression(), buildingTypeFilterExpression());
+}
+
 function buildingSelectionFilterExpression() {
   const idFilter = ["==", ["get", "objectid"], state.selectedBuildingId ?? -999999];
-  const regionFilter = buildingRegionFilterExpression();
-  return regionFilter ? ["all", idFilter, regionFilter] : idFilter;
+  return combineFilters(idFilter, buildingFilterExpression());
 }
 
 function selectedRegionLayerFilterExpression() {
@@ -645,6 +710,80 @@ function syncRegionCheckboxes() {
     });
   });
   updateRegionFilterSummary();
+}
+
+function updateBuildingTypeFilterSummary() {
+  if (!els.buildingTypeFilterSummary) return;
+  const total = allBuildingTypes().length;
+  const count = selectedBuildingTypeCount();
+  if (!total) {
+    els.buildingTypeFilterSummary.textContent = "Loading building types...";
+  } else if (count === total) {
+    els.buildingTypeFilterSummary.textContent = `All building types (${total})`;
+  } else if (!count) {
+    els.buildingTypeFilterSummary.textContent = "No building types selected";
+  } else {
+    els.buildingTypeFilterSummary.textContent = `${count} of ${total} building types`;
+  }
+}
+
+function renderBuildingTypeFilter() {
+  if (!els.buildingTypeFilterList) {
+    updateBuildingTypeFilterSummary();
+    return;
+  }
+  const groups = buildingTypeGroups();
+  const labels = buildingTypeLabels();
+  const counts = buildingTypeCounts();
+  const allTypes = allBuildingTypes();
+  if (!allTypes.length) {
+    updateBuildingTypeFilterSummary();
+    return;
+  }
+  state.selectedBuildingTypes = new Set(allTypes);
+  els.buildingTypeFilterList.innerHTML = Object.entries(groups)
+    .map(([groupId, group]) => {
+      const types = group.types || [];
+      const groupCount = types.reduce((sum, type) => sum + Number(counts[type] || 0), 0);
+      const typeMarkup = types
+        .map((type) => {
+          return `
+            <label class="region-filter-option building-type-filter-option">
+              <input type="checkbox" value="${htmlSafe(type)}" data-building-type="${htmlSafe(type)}" checked />
+              <span>${htmlSafe(labels[type] || type)}</span>
+              <strong>${compactCount(counts[type] || 0)}</strong>
+            </label>
+          `;
+        })
+        .join("");
+      return `
+        <div class="region-filter-section">
+          <div class="region-filter-section-title">${htmlSafe(group.label)} (${compactCount(groupCount)})</div>
+          <label class="region-filter-option region-filter-group-option">
+            <input type="checkbox" data-building-type-group="${htmlSafe(groupId)}" checked />
+            <span>All ${htmlSafe(group.label)}</span>
+            <strong>${types.length}</strong>
+          </label>
+          ${typeMarkup}
+        </div>
+      `;
+    })
+    .join("");
+  updateBuildingTypeFilterSummary();
+}
+
+function syncBuildingTypeCheckboxes() {
+  if (!els.buildingTypeFilterList) return;
+  els.buildingTypeFilterList.querySelectorAll("input[data-building-type]").forEach((input) => {
+    input.checked = state.selectedBuildingTypes.has(input.value);
+  });
+  els.buildingTypeFilterList.querySelectorAll("input[data-building-type-group]").forEach((input) => {
+    const types = buildingTypeGroups()[input.dataset.buildingTypeGroup]?.types || [];
+    const checkedCount = types.filter((type) => state.selectedBuildingTypes.has(type)).length;
+    input.checked = types.length > 0 && checkedCount === types.length;
+    input.indeterminate = checkedCount > 0 && checkedCount < types.length;
+  });
+  updateBuildingTypeFilterSummary();
 }
 
 function shouldShowRegionOverlay() {
@@ -760,11 +899,16 @@ function applyLczRegionFilter() {
 
 function applyRegionFilter() {
   if (!state.map) return;
-  const buildingFilter = buildingRegionFilterExpression();
+  const buildingFilter = buildingFilterExpression();
   const selectedFilter = buildingSelectionFilterExpression();
+  const overviewFilter = buildingOverviewTypeFilterExpression();
   try {
     if (state.map.getLayer("buildings-extrusion")) state.map.setFilter("buildings-extrusion", buildingFilter);
     if (state.map.getLayer("building-selected")) state.map.setFilter("building-selected", selectedFilter);
+    ["building-overview-fill", "building-overview-line"].forEach((layer) => {
+      if (!state.map.getLayer(layer)) return;
+      state.map.setFilter(layer, overviewFilter);
+    });
     const regionLayerFilter = selectedRegionLayerFilterExpression();
     ["region-filter-fill", "region-filter-line"].forEach((layer) => {
       if (!state.map.getLayer(layer)) return;
@@ -1361,7 +1505,6 @@ function initMetricButtons() {
   [
     [els.buildingMetricButtons, ["building_type", "height_m"]],
     [els.weatherButtons, ["weather_temp", "weather_wind", "weather_rh", "weather_solar"]],
-    [els.energyBuildingTypeButtons, ["building_type"]],
     [els.measuredEnergyButtons, ["eui_2023"]]
   ].forEach(([container, keys]) => {
     if (!container) return;
@@ -1406,15 +1549,12 @@ function updateMetricButtons() {
   const buttons = [
     ...(els.buildingMetricButtons ? els.buildingMetricButtons.querySelectorAll("button") : []),
     ...(els.weatherButtons ? els.weatherButtons.querySelectorAll("button") : []),
-    ...(els.energyBuildingTypeButtons ? els.energyBuildingTypeButtons.querySelectorAll("button") : []),
     ...(els.measuredEnergyButtons ? els.measuredEnergyButtons.querySelectorAll("button") : [])
   ];
   buttons.forEach((button) => {
     const metric = button.dataset.metric;
     const def = metricDefinition(metric);
-    const canSwitchToBuildings = Boolean(button.closest("#energyBuildingTypeButtons"));
     const unavailable =
-      !canSwitchToBuildings &&
       state.mode === "grid" &&
       def.category !== "weather" &&
       !hasMetricForLayer("grid_500m", metric);
@@ -2250,6 +2390,7 @@ async function loadData() {
   state.metadata = await metadataResponse.json();
   els.buildingCount.textContent = compactCount(state.metadata.layers.buildings.count);
   els.gridCount.textContent = compactCount(state.metadata.layers.grid_500m.count);
+  renderBuildingTypeFilter();
 
   showLoading("Loading Singapore regions...");
   const regionResponse = await fetch("data/regions_sg.geojson", { cache: "no-store" });
@@ -2433,6 +2574,37 @@ function bindEvents() {
       applyRegionFilter();
       updateLegend();
     });
+  });
+  els.buildingTypeFilterList?.addEventListener("change", (event) => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement) || input.type !== "checkbox") return;
+    const groupId = input.dataset.buildingTypeGroup;
+    if (groupId) {
+      const types = buildingTypeGroups()[groupId]?.types || [];
+      types.forEach((type) => {
+        if (input.checked) state.selectedBuildingTypes.add(type);
+        else state.selectedBuildingTypes.delete(type);
+      });
+    } else {
+      const type = input.dataset.buildingType || input.value;
+      if (input.checked) state.selectedBuildingTypes.add(type);
+      else state.selectedBuildingTypes.delete(type);
+    }
+    syncBuildingTypeCheckboxes();
+    applyRegionFilter();
+    updateLegend();
+  });
+  els.buildingTypeSelectAll?.addEventListener("click", () => {
+    state.selectedBuildingTypes = new Set(allBuildingTypes());
+    syncBuildingTypeCheckboxes();
+    applyRegionFilter();
+    updateLegend();
+  });
+  els.buildingTypeClearAll?.addEventListener("click", () => {
+    state.selectedBuildingTypes = new Set();
+    syncBuildingTypeCheckboxes();
+    applyRegionFilter();
+    updateLegend();
   });
   els.resetView.addEventListener("click", () => {
     state.selectedBuildingId = null;

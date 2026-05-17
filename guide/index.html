@@ -341,8 +341,8 @@
           <div class="info-card">
             <strong>Platform scale</strong>
             The current Singapore dataset includes 118,782 buildings, 500 m district grids,
-            WRF-derived hourly microclimate fields, LCZ layers, simulated weekly energy use,
-            and measured annual EUI records for 2023 where available.
+            WRF-derived hourly microclimate fields, LCZ layers, simulated weekly energy use
+            in kWh/week, and measured annual EUI records for 2023 where available.
           </div>
 
           <div class="info-card">
@@ -529,12 +529,7 @@
           preprocessing. At the building-energy level, the WRF-derived local variables above are
           inserted into grid-specific EPW weather files, so that each building can be simulated
           with a localized microclimate boundary condition rather than a single city-wide weather
-          file. If the raw WRF forcing archive is released later, cite the exact forcing product
-          used for the simulations, such as an official
-          <a href="https://oidc.rda.ucar.edu/datasets/d083002/detailed_metadata/" target="_blank" rel="noopener noreferrer">NCEP FNL</a>
-          or
-          <a href="https://www.ecmwf.int/en/forecasts/dataset/ecmwf-reanalysis-v5" target="_blank" rel="noopener noreferrer">ERA5</a>
-          dataset, as appropriate.
+          file.
         </p>
       </section>
 
@@ -598,10 +593,10 @@
 
         <h3>Energy layers in the platform</h3>
         <ul>
-          <li>Weekly simulation data without microclimate for relatively hot, relatively cool, and transitional periods.</li>
-          <li>Weekly simulation data with WRF-derived microclimate for the same three periods.</li>
+          <li>Weekly simulation data without microclimate for relatively hot, relatively cool, and transitional periods, reported as kWh/week.</li>
+          <li>Weekly simulation data with WRF-derived microclimate for the same three periods, reported as kWh/week.</li>
           <li>Percentage difference between microclimate and non-microclimate simulations.</li>
-          <li>Measured yearly EUI (2023) from BCA records where matched data are available.</li>
+          <li>Measured yearly EUI (2023) from BCA records where matched data are available, reported as kWh/m<sup>2</sup>/year.</li>
         </ul>
 
         <h3>How to read the difference layers</h3>
@@ -651,16 +646,16 @@
         <h2><i class="fa-solid fa-book"></i>Publications</h2>
 
         <p>
-          The platform is connected to the following research output. Full journal details will be
-          updated after publication.
+          The platform is connected to the following peer-reviewed publication.
         </p>
 
         <ul class="publication-list">
           <li>
+            Jie, P., Tian, S., Liu, P., Wang, J., Santamouris, M., Hu, M., &amp; Shi, X. (2026).
             <strong>Microclimate-Integrated Urban Building Energy Modeling (MUBEM):
             Spatiotemporal analysis of climate-driven energy use in Shanghai and Singapore.</strong>
-            Preprint available on
-            <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6203923" target="_blank" rel="noopener noreferrer">SSRN</a>.
+            <em>Building and Environment</em>, Article 114749.
+            <a href="https://doi.org/10.1016/j.buildenv.2026.114749" target="_blank" rel="noopener noreferrer">https://doi.org/10.1016/j.buildenv.2026.114749</a>
           </li>
         </ul>
       </section>
