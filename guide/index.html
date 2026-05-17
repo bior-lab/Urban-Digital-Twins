@@ -431,19 +431,51 @@
 
         <h3>Building archetypes</h3>
         <p>
-          The Singapore building stock was classified into major archetypes and subcategories.
-          Residential buildings form the largest share, followed by public service, commercial,
-          office and amenities, and education. These archetypes define geometry assumptions,
-          schedules, internal loads, envelope properties, HVAC settings, and model calibration
-          factors used in the MUBEM workflow.
+          Building archetypes were assigned through a multi-source matching workflow rather
+          than a single authoritative attribute table. Following the MUBEM workflow described in
+          the related paper, building footprints were spatially joined with planning-use,
+          address, public-housing, and measured-energy records. Where a source did not directly
+          provide a building-level label, nearby address, land-use, height, age, and contextual
+          attributes were used to harmonize each footprint into an energy-model archetype. The
+          web map displays the processed research labels and does not redistribute the raw
+          source datasets.
         </p>
 
         <ul>
-          <li>Public service: industrial, hospital, clinic, nursing home.</li>
-          <li>Commercial: retail, office, mixed development, business park, shophouse.</li>
-          <li>Education: institutes of higher learning and non-institutes of higher learning.</li>
-          <li>Residential: private apartment, HDB, landed property, hotel.</li>
-          <li>Office and amenities: community cultural, data center, sports, restaurant, supermarket.</li>
+          <li>
+            Authoritative footprint reference, where licence access is available:
+            <a href="https://www.sla.gov.sg/geospatial/digitised-land-information/" target="_blank" rel="noopener noreferrer">SLA Digitised Land Information - Building Outline</a>.
+            Open-footprint alternatives and supplementary volunteered attributes can be obtained from
+            <a href="https://www.openstreetmap.org/about/en" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>
+            or the
+            <a href="https://www.hotosm.org/en/tools-resources/tech-product-suite/hot-export-tool/" target="_blank" rel="noopener noreferrer">HOT Export Tool</a>.
+          </li>
+          <li>
+            Planning-use context for residential, commercial, industrial, civic, utility, park,
+            and other land-use cues:
+            <a href="https://data.gov.sg/datasets/d_90d86daa5bfaa371668b84fa5f01424f/view" target="_blank" rel="noopener noreferrer">URA Master Plan 2019 Land Use layer</a>
+            and
+            <a href="https://data.gov.sg/collections/1645/datasets/d_e8e3249d4433845bdd8034ae44329d9e/view" target="_blank" rel="noopener noreferrer">URA Master Plan 2019 Building layer</a>.
+          </li>
+          <li>
+            Non-residential labels, gross floor area, EUI, and benchmarking categories for
+            offices, hotels, retail, mixed developments, healthcare, institutional, civic,
+            community, cultural, sports, and recreation buildings:
+            <a href="https://data.gov.sg/dataset/building-energy-performance-data" target="_blank" rel="noopener noreferrer">BCA Publication of Building Energy Performance Data</a>
+            and
+            <a href="https://www1.bca.gov.sg/sustainability/legislation-on-environmental-sustainability-for-buildings/existing-buildings/building-energy-benchmarking-report/" target="_blank" rel="noopener noreferrer">BCA Building Energy Benchmarking Report</a>.
+          </li>
+          <li>
+            Public-housing identification and residential metadata, including block number,
+            street, maximum floor level, completion year, dwelling-unit composition, and
+            ancillary-use flags:
+            <a href="https://data.gov.sg/datasets/d_17f5382f26140b1fdae0ba2ef6239d2f/view" target="_blank" rel="noopener noreferrer">HDB Property Information</a>.
+          </li>
+          <li>
+            Address, postal-code, building-name, and coordinate matching support:
+            <a href="https://geoworks.sla.gov.sg/sla-products/onemap/" target="_blank" rel="noopener noreferrer">SLA OneMap</a>
+            search and reverse-geocoding services.
+          </li>
         </ul>
 
         <h3>Weather, LCZ, and validation data</h3>
