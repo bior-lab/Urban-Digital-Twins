@@ -317,7 +317,7 @@
       <ul class="nav-list">
         <li><a href="#about">About</a></li>
         <li><a href="#objectives">Objectives</a></li>
-        <li><a href="#data">Data source</a></li>
+        <li><a href="#data">Data sources</a></li>
         <li><a href="#microclimate">WRF microclimate</a></li>
         <li><a href="#lcz">LCZ analysis</a></li>
         <li><a href="#energy">Energy model</a></li>
@@ -409,43 +409,71 @@
       </section>
 
       <section id="data">
-        <h2><i class="fa-solid fa-database"></i>Data Source</h2>
+        <h2><i class="fa-solid fa-database"></i>Data Sources and Processing</h2>
 
         <p>
-          The platform combines official records, open geospatial datasets, machine-learning
-          building-height products, WRF simulations, and the paper's derived modelling outputs.
-          The web map shows processed research layers rather than raw source files.
+          The web map visualizes processed research layers produced for the MUBEM study rather
+          than raw source datasets. For Singapore, the building inventory was constructed with
+          reference to the publicly released Buildings.city/Buildings.sg dataset documented by
+          Lyu et al., and was further harmonized through our own multi-source data-fusion
+          workflow. The resulting layers combine open geospatial data, public/government
+          building records, machine-learning building-height products, WRF-derived microclimate
+          simulations, and EnergyPlus modelling outputs.
         </p>
 
         <h3>Building geometry, height, type, and age</h3>
         <p>
-          Building footprints and attributes were compiled through multi-source data fusion.
-          Invalid footprint records smaller than 20 m<sup>2</sup> were excluded, and duplicated
-          or topologically invalid records were screened before model construction. Building
-          height was assembled from available map, public-housing, government/open-data, and
-          machine-learning sources, then completed with spatial overlap transfer,
-          neighbourhood-based interpolation, and K-nearest-neighbor gap filling under
-          cross-source consistency constraints. Building type and construction-age information
-          were harmonized into Singapore-specific archetypes for energy modelling.
+          Singapore building footprints and initial attributes were based on the
+          Buildings.city/Buildings.sg inventory, which integrates OpenStreetMap building
+          footprints with HDB and BCA records and machine-learning-inferred archetype labels.
+          In this study, the inventory was reprocessed for MUBEM simulation. Invalid footprints
+          smaller than 20 m<sup>2</sup> were excluded, and duplicated or topologically invalid
+          records were screened before model construction.
+        </p>
+
+        <p>
+          Building height was not used as a single raw imported attribute. Instead, height
+          information was assembled from available map attributes, HDB/public-housing records,
+          government/open-data sources, and machine-learning-based height references such as
+          UT-GLOBUS. Missing or inconsistent height values were completed using spatial overlap
+          transfer, neighbourhood-based interpolation, and K-nearest-neighbor gap filling under
+          cross-source consistency constraints.
+        </p>
+
+        <p>
+          Construction age was harmonized from available completion-year, TOP/CSC,
+          public-housing, and built-environment age information. Where direct building-year
+          records were unavailable, buildings were assigned to modelling vintage groups using
+          the rule-based hierarchy adopted in this study.
         </p>
 
         <ul>
+          <li>
+            Main reference inventory for Singapore:
+            <a href="https://doi.org/10.1016/j.compenvurbsys.2026.102453" target="_blank" rel="noopener noreferrer">Buildings.city/Buildings.sg dataset documented by Lyu et al.</a>
+            in <em>Computers, Environment and Urban Systems</em>.
+          </li>
           <li>
             Building footprints and volunteered map attributes:
             <a href="https://www.openstreetmap.org/about/en" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>.
           </li>
           <li>
-            HDB public housing attributes, including completion year and floor information:
-            <a href="https://data.gov.sg/dataset/hdb-property-information" target="_blank" rel="noopener noreferrer">HDB Property Information on data.gov.sg</a>.
-          </li>
-          <li>
-            Licensed or official building records, where available, were used as authoritative
-            anchors for footprint, type, and height attributes, while open building outlines
-            were used to improve spatial completeness.
+            Public-housing attributes, including completion year and floor information:
+            <a href="https://data.gov.sg/dataset/hdb-property-information" target="_blank" rel="noopener noreferrer">HDB Property Information</a>
+            and HDB 3D data, where applicable.
           </li>
           <li>
             Commercial and public building benchmarking records:
-            <a href="https://www1.bca.gov.sg/buildsg/sustainability/regulatory-requirements-for-existing-buildings/bca-building-energy-benchmarking-and-disclosure" target="_blank" rel="noopener noreferrer">BCA Building Energy Benchmarking and Disclosure</a>.
+            <a href="https://www1.bca.gov.sg/buildsg/sustainability/regulatory-requirements-for-existing-buildings/bca-building-energy-benchmarking-and-disclosure" target="_blank" rel="noopener noreferrer">BCA Building Energy Benchmarking and Disclosure</a>
+            and
+            <a href="https://data.gov.sg/dataset/building-energy-performance-data" target="_blank" rel="noopener noreferrer">BCA Building Energy Performance Data</a>.
+          </li>
+          <li>
+            Planning-use and address-matching context:
+            <a href="https://data.gov.sg/datasets/d_90d86daa5bfaa371668b84fa5f01424f/view" target="_blank" rel="noopener noreferrer">URA Master Plan layers</a>
+            and
+            <a href="https://geoworks.sla.gov.sg/sla-products/onemap/" target="_blank" rel="noopener noreferrer">OneMap services</a>,
+            where applicable.
           </li>
           <li>
             Supplementary land-cover and built-environment context:
@@ -470,52 +498,19 @@
 
         <h3>Building archetypes</h3>
         <p>
-          Building archetypes were assigned through a multi-source matching workflow rather
-          than a single authoritative attribute table. Following the MUBEM workflow described in
-          the related paper, building footprints were spatially joined with planning-use,
-          address, public-housing, and measured-energy records. Where a source did not directly
-          provide a building-level label, nearby address, land-use, height, age, and contextual
-          attributes were used to harmonize each footprint into an energy-model archetype. The
-          web map displays the processed research labels and does not redistribute the raw
-          source datasets.
+          Building archetypes were assigned through a multi-source matching and harmonization
+          workflow rather than from a single authoritative attribute table. The
+          Buildings.city/Buildings.sg labels were used as an important reference layer where
+          available, and were further reclassified into the MUBEM energy-modelling categories
+          used in this study. Additional cues from OSM tags, HDB records, BCA benchmarking
+          records, planning-use context, address/building-name matching, height, age, and
+          surrounding land-use context were used to resolve missing or ambiguous labels.
         </p>
 
-        <ul>
-          <li>
-            Authoritative footprint reference, where licence access is available:
-            <a href="https://www.sla.gov.sg/geospatial/digitised-land-information/" target="_blank" rel="noopener noreferrer">SLA Digitised Land Information - Building Outline</a>.
-            Open-footprint alternatives and supplementary volunteered attributes can be obtained from
-            <a href="https://www.openstreetmap.org/about/en" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>
-            or the
-            <a href="https://www.hotosm.org/en/tools-resources/tech-product-suite/hot-export-tool/" target="_blank" rel="noopener noreferrer">HOT Export Tool</a>.
-          </li>
-          <li>
-            Planning-use context for residential, commercial, industrial, civic, utility, park,
-            and other land-use cues:
-            <a href="https://data.gov.sg/datasets/d_90d86daa5bfaa371668b84fa5f01424f/view" target="_blank" rel="noopener noreferrer">URA Master Plan 2019 Land Use layer</a>
-            and
-            <a href="https://data.gov.sg/collections/1645/datasets/d_e8e3249d4433845bdd8034ae44329d9e/view" target="_blank" rel="noopener noreferrer">URA Master Plan 2019 Building layer</a>.
-          </li>
-          <li>
-            Non-residential labels, gross floor area, EUI, and benchmarking categories for
-            offices, hotels, retail, mixed developments, healthcare, institutional, civic,
-            community, cultural, sports, and recreation buildings:
-            <a href="https://data.gov.sg/dataset/building-energy-performance-data" target="_blank" rel="noopener noreferrer">BCA Publication of Building Energy Performance Data</a>
-            and
-            <a href="https://www1.bca.gov.sg/sustainability/legislation-on-environmental-sustainability-for-buildings/existing-buildings/building-energy-benchmarking-report/" target="_blank" rel="noopener noreferrer">BCA Building Energy Benchmarking Report</a>.
-          </li>
-          <li>
-            Public-housing identification and residential metadata, including block number,
-            street, maximum floor level, completion year, dwelling-unit composition, and
-            ancillary-use flags:
-            <a href="https://data.gov.sg/datasets/d_17f5382f26140b1fdae0ba2ef6239d2f/view" target="_blank" rel="noopener noreferrer">HDB Property Information</a>.
-          </li>
-          <li>
-            Address, postal-code, building-name, and coordinate matching support:
-            <a href="https://geoworks.sla.gov.sg/sla-products/onemap/" target="_blank" rel="noopener noreferrer">SLA OneMap</a>
-            search and reverse-geocoding services.
-          </li>
-        </ul>
+        <p>
+          The web map displays the final processed research labels and simulation outputs; it
+          does not redistribute the raw source datasets.
+        </p>
 
         <h3>Urban context, population, and administrative boundaries</h3>
         <p>
