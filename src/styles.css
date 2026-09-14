@@ -273,8 +273,17 @@ select:focus {
   background: var(--nus-orange);
 }
 
-.nav-building-dt {
+.nav-campus-dt {
   margin-top: auto;
+}
+
+.nav-campus-dt {
+  color: #ffffff;
+  line-height: 1.15;
+}
+
+.nav-campus-dt .nav-icon {
+  color: #ffffff;
 }
 
 .nav-help {
@@ -1167,7 +1176,7 @@ input[type="range"] {
     display: none;
   }
 
-  .nav-building-dt,
+  .nav-campus-dt,
   .nav-help {
     margin-top: 0;
   }

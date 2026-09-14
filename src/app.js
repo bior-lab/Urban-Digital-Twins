@@ -349,6 +349,7 @@ const state = {
   activeWeatherSeriesKey: "",
   weatherTimeIndex: 0,
   weatherPlayTimer: null,
+  weatherAutoPlay: false,
   lczLayer: "off",
   lczRaw: null,
   lczGridRows: [],
@@ -1184,10 +1185,17 @@ function stopWeatherPlayback() {
 
 function toggleWeatherPlayback() {
   if (state.weatherPlayTimer) {
+    state.weatherAutoPlay = false;
     stopWeatherPlayback();
     return;
   }
-  if (!state.weatherSeries) return;
+  state.weatherAutoPlay = true;
+  startWeatherPlayback();
+}
+
+function startWeatherPlayback() {
+  if (state.weatherPlayTimer || !state.weatherSeries?.times.length ||
+      metricDefinition().category !== "weather") return;
   els.weatherPlay.textContent = "Pause";
   state.weatherPlayTimer = window.setInterval(() => {
     if (!state.weatherSeries) return;
@@ -1216,6 +1224,7 @@ async function refreshWeatherSeries() {
     await loadWeatherSeries();
     updateMapStyle();
     updateLegend();
+    if (state.weatherAutoPlay) startWeatherPlayback();
   } catch (error) {
     console.warn(error);
     state.weatherSeries = null;
@@ -2528,6 +2537,20 @@ function initMap(token) {
 }
 
 function bindEvents() {
+  document.querySelectorAll(".app-nav-item[href^='#']").forEach((item) => {
+    item.addEventListener("click", () => {
+      const isMicroclimate = item.getAttribute("href") === "#microclimate";
+      state.weatherAutoPlay = isMicroclimate;
+      if (isMicroclimate) {
+        state.map?.fitBounds([[103.59, 1.15], [104.1, 1.48]], {
+          padding: 40, pitch: 0, bearing: 0, duration: 900
+        });
+        startWeatherPlayback();
+      } else {
+        stopWeatherPlayback();
+      }
+    });
+  });
   els.tokenSave.addEventListener("click", () => {
     const token = els.tokenInput.value.trim();
     if (!token) return;
