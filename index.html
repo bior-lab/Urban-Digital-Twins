@@ -154,10 +154,10 @@
           </div>
 
           <div class="control-block region-filter-block">
-            <span class="control-label">Region filter</span>
+            <span class="control-label">Step 1: Select major regions</span>
             <details id="regionFilterDropdown" class="region-filter-dropdown">
               <summary>
-                <span id="regionFilterSummary" data-region-filter-summary>All regions</span>
+                <span id="regionFilterSummary" data-region-filter-summary="major">Central Region</span>
                 <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
               </summary>
               <div class="region-filter-menu">
@@ -165,7 +165,24 @@
                   <button id="regionSelectAll" type="button" data-region-select-all>Select all</button>
                   <button id="regionClearAll" type="button" data-region-clear-all>Clear</button>
                 </div>
-                <div id="regionFilterList" class="region-filter-list" data-region-filter-list></div>
+                <div id="regionFilterList" class="region-filter-list" data-region-filter-list="major"></div>
+              </div>
+            </details>
+          </div>
+
+          <div class="control-block region-filter-block">
+            <span class="control-label">Step 2: Select planning areas within major regions</span>
+            <details class="region-filter-dropdown">
+              <summary>
+                <span data-region-filter-summary="planning">Bukit Merah</span>
+                <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+              </summary>
+              <div class="region-filter-menu">
+                <div class="region-filter-actions">
+                  <button type="button" data-region-select-all="planning">Select all</button>
+                  <button type="button" data-region-clear-all="planning">Clear</button>
+                </div>
+                <div class="region-filter-list" data-region-filter-list="planning"></div>
               </div>
             </details>
           </div>
@@ -304,7 +321,7 @@
             <span class="control-label">Step 1: Select major regions</span>
             <details id="regionFilterDropdownEnergy" class="region-filter-dropdown">
               <summary>
-                <span id="regionFilterSummaryEnergy" data-region-filter-summary="major">All regions</span>
+                <span id="regionFilterSummaryEnergy" data-region-filter-summary="major">Central Region</span>
                 <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
               </summary>
               <div class="region-filter-menu">
@@ -321,7 +338,7 @@
             <span class="control-label">Step 2: Select planning areas within major regions</span>
             <details class="region-filter-dropdown">
               <summary>
-                <span data-region-filter-summary="planning">All planning areas</span>
+                <span data-region-filter-summary="planning">Bukit Merah</span>
                 <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
               </summary>
               <div class="region-filter-menu">
@@ -446,7 +463,6 @@
     <script src="src/app.js?v=20260517-energy-filter-v1"></script>
 
     <script>
-      let microclimateDefaultsApplied = false;
 
       document.querySelectorAll(".app-nav-item[href^='#']").forEach((item) => {
         item.addEventListener("click", (event) => {
@@ -475,7 +491,7 @@
 
           if (targetId === "microclimate") {
             setTimeout(activateMicroclimateGridMode, 100);
-            setTimeout(setupMicroclimateOnce, 250);
+            setTimeout(setupMicroclimateDefaults, 250);
           }
 
           if (targetId === "energy") {
@@ -603,26 +619,31 @@
         return true;
       }
 
-      function setupMicroclimateOnce() {
+      function setupMicroclimateDefaults() {
         const microclimatePanel = document.getElementById("microclimate");
         if (!microclimatePanel || !microclimatePanel.classList.contains("active")) return;
 
         applyWeatherButtonOrder();
-
-        if (microclimateDefaultsApplied) return;
 
         let attempts = 0;
 
         const timer = setInterval(() => {
           attempts += 1;
 
+          if (!microclimatePanel.classList.contains("active")) {
+            clearInterval(timer);
+            return;
+          }
           applyWeatherButtonOrder();
 
-          const temperatureReady = clickButtonByText("weatherButtons", "2 m air temperature");
-          const hotReady = clickButtonByText("periodButtons", "Relatively hot season (May)");
+          const temperature = document.querySelector('#weatherButtons button[data-metric="weather_temp"]');
+          const hot = document.querySelector('#periodButtons button[data-period="hot"]');
+          if (temperature && hot) {
+            temperature.click();
+            hot.click();
+          }
 
-          if ((temperatureReady && hotReady) || attempts > 20) {
-            microclimateDefaultsApplied = true;
+          if ((temperature && hot) || attempts > 20) {
             clearInterval(timer);
           }
         }, 100);

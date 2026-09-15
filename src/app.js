@@ -685,6 +685,7 @@ function updateRegionFilterSummary() {
     } else if (summary.dataset.regionFilterSummary === "planning") {
       const available = regionFeatures().filter((feature) => state.selectedMajorRegionIds.has(regionGroupId(feature))).length;
       summary.textContent = !total ? "Loading planning areas..." : !available ? "Select major regions first"
+        : count === 1 ? regionName(regionFeatures().find((feature) => state.selectedRegionIds.has(regionId(feature))))
         : `${count} of ${available} planning areas`;
     } else {
       summary.textContent = text;
@@ -699,8 +700,11 @@ function renderRegionFilter() {
     updateRegionFilterSummary();
     return;
   }
-  state.selectedRegionIds = new Set(features.map(regionId));
-  state.selectedMajorRegionIds = new Set(regionGroups().map((group) => group.id));
+  const defaultAreas = features.filter((feature) =>
+    regionGroupId(feature) === "Central Region" && regionId(feature) === "BM"
+  );
+  state.selectedRegionIds = new Set(defaultAreas.map(regionId));
+  state.selectedMajorRegionIds = new Set(defaultAreas.map(regionGroupId));
   const groupMarkup = regionGroups()
     .map((group) => {
       return `
@@ -738,7 +742,7 @@ function renderRegionFilter() {
     list.innerHTML = list.dataset.regionFilterList === "major" ? groupMarkup
       : list.dataset.regionFilterList === "planning" ? districtMarkup : markup;
   });
-  updateRegionFilterSummary();
+  syncRegionCheckboxes();
 }
 
 function syncRegionCheckboxes() {
