@@ -2543,16 +2543,23 @@ class MapViewControl {
     addButton("↷", "Rotate right 30°", () => {
       map.easeTo({ bearing: map.getBearing() + 30, duration: 300 });
     });
-    this.pitchButton = addButton("", "", () => {
-      const pitch = [0, 30, 60].find((value) => value > map.getPitch() + 1) ?? 0;
-      map.easeTo({ pitch, duration: 400 });
-    });
+    const addPitchButton = (direction, step, label) => {
+      const button = addButton("", label, () => {
+        const pitch = Math.max(map.getMinPitch(), Math.min(map.getMaxPitch(), map.getPitch() + step));
+        map.easeTo({ pitch, duration: 300 });
+      });
+      const icon = document.createElement("span");
+      icon.className = `map-pitch-chevron map-pitch-chevron-${direction}`;
+      icon.setAttribute("aria-hidden", "true");
+      button.appendChild(icon);
+      return button;
+    };
+    this.pitchUpButton = addPitchButton("up", 10, "Increase tilt 10°");
+    this.pitchDownButton = addPitchButton("down", -10, "Decrease tilt 10°");
     this.updatePitch = () => {
-      const pitch = Math.round(map.getPitch());
-      this.pitchButton.textContent = `${pitch}°`;
-      const label = `Tilt: ${pitch}°. Click to cycle through 0°, 30°, and 60°`;
-      this.pitchButton.title = label;
-      this.pitchButton.setAttribute("aria-label", label);
+      const pitch = map.getPitch();
+      this.pitchUpButton.disabled = pitch >= map.getMaxPitch() - 0.01;
+      this.pitchDownButton.disabled = pitch <= map.getMinPitch() + 0.01;
     };
     map.on("pitch", this.updatePitch);
     this.updatePitch();

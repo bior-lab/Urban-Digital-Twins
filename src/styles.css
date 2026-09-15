@@ -979,6 +979,35 @@ input[type="range"] {
   border-radius: 0;
 }
 
+.map-view-control button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--nus-blue);
+  font-size: 22px;
+}
+
+.map-view-control button:disabled {
+  cursor: default;
+  opacity: 0.35;
+}
+
+.map-pitch-chevron {
+  width: 9px;
+  height: 9px;
+  border-top: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  pointer-events: none;
+}
+
+.map-pitch-chevron-up {
+  transform: translateY(2px) rotate(-45deg);
+}
+
+.map-pitch-chevron-down {
+  transform: translateY(-2px) rotate(135deg);
+}
+
 /* Brand logo and title */
 .brand-top {
   display: flex;
