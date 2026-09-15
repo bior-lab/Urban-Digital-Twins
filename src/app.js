@@ -326,6 +326,7 @@ const state = {
   grid: null,
   regions: null,
   selectedRegionIds: new Set(),
+  selectedMajorRegionIds: new Set(),
   selectedBuildingTypes: new Set(),
   mode: "combined",
   metric: "energy_hot",
@@ -677,7 +678,17 @@ function updateRegionFilterSummary() {
     text = `${count} of ${total} areas`;
   }
   summaries.forEach((summary) => {
-    summary.textContent = text;
+    if (summary.dataset.regionFilterSummary === "major") {
+      const selected = regionGroups().filter((group) => state.selectedMajorRegionIds.has(group.id));
+      summary.textContent = !total ? "Loading major regions..." : !selected.length ? "No major regions selected"
+        : selected.length === regionGroups().length ? "All major regions" : selected.map((group) => group.label).join(", ");
+    } else if (summary.dataset.regionFilterSummary === "planning") {
+      const available = regionFeatures().filter((feature) => state.selectedMajorRegionIds.has(regionGroupId(feature))).length;
+      summary.textContent = !total ? "Loading planning areas..." : !available ? "Select major regions first"
+        : `${count} of ${available} planning areas`;
+    } else {
+      summary.textContent = text;
+    }
   });
 }
 
@@ -689,6 +700,7 @@ function renderRegionFilter() {
     return;
   }
   state.selectedRegionIds = new Set(features.map(regionId));
+  state.selectedMajorRegionIds = new Set(regionGroups().map((group) => group.id));
   const groupMarkup = regionGroups()
     .map((group) => {
       return `
@@ -723,7 +735,8 @@ function renderRegionFilter() {
     </div>
   `;
   lists.forEach((list) => {
-    list.innerHTML = markup;
+    list.innerHTML = list.dataset.regionFilterList === "major" ? groupMarkup
+      : list.dataset.regionFilterList === "planning" ? districtMarkup : markup;
   });
   updateRegionFilterSummary();
 }
@@ -733,12 +746,17 @@ function syncRegionCheckboxes() {
   lists.forEach((list) => {
     list.querySelectorAll("input[data-region-id]").forEach((input) => {
       input.checked = state.selectedRegionIds.has(input.value);
+      if (list.dataset.regionFilterList === "planning") {
+        const feature = regionFeatures().find((feature) => regionId(feature) === input.value);
+        input.closest("label").hidden = !feature || !state.selectedMajorRegionIds.has(regionGroupId(feature));
+      }
     });
     list.querySelectorAll("input[data-region-group]").forEach((input) => {
       const ids = regionIdsForGroup(input.dataset.regionGroup);
       const checkedCount = ids.filter((id) => state.selectedRegionIds.has(id)).length;
-      input.checked = ids.length > 0 && checkedCount === ids.length;
-      input.indeterminate = checkedCount > 0 && checkedCount < ids.length;
+      input.checked = list.dataset.regionFilterList === "major"
+        ? state.selectedMajorRegionIds.has(input.dataset.regionGroup) : ids.length > 0 && checkedCount === ids.length;
+      input.indeterminate = list.dataset.regionFilterList !== "major" && checkedCount > 0 && checkedCount < ids.length;
     });
   });
   updateRegionFilterSummary();
@@ -1617,10 +1635,17 @@ function updateMetricButtons() {
       def.category !== "weather" &&
       !hasMetricForLayer("grid_500m", metric);
     button.classList.toggle("active", metric === state.metric);
-    button.disabled = unavailable;
+    button.disabled = unavailable || (button.parentElement === els.measuredEnergyButtons && state.metric !== "eui_2023");
+  });
+  document.querySelectorAll('input[name="energySource"]').forEach((radio) => {
+    radio.checked = radio.value === "measured"
+      ? state.metric === "eui_2023"
+      : ENERGY_SIMULATION_METRICS.includes(state.metric);
+    radio.disabled = radio.value === "measured" && state.mode === "grid" && !hasMetricForLayer("grid_500m", "eui_2023");
   });
   updateLczButtons();
   if (els.energyMetricSelect) {
+    els.energyMetricSelect.disabled = !ENERGY_SIMULATION_METRICS.includes(state.metric);
     els.energyMetricSelect.value = ENERGY_SIMULATION_METRICS.includes(state.metric) ? state.metric : "";
     Array.from(els.energyMetricSelect.options).forEach((option) => {
       if (!option.value) return;
@@ -2573,6 +2598,21 @@ function bindEvents() {
     updateLegend();
     refreshWeatherSeries();
   });
+  document.querySelectorAll('input[name="energySource"]').forEach((radio) => {
+    radio.addEventListener("change", () => {
+      if (!radio.checked) return;
+      const metric = radio.value === "measured" ? "eui_2023" : ENERGY_SIMULATION_METRICS.find(
+        (key) => state.mode !== "grid" || hasMetricForLayer("grid_500m", key)
+      );
+      if (!metric) return;
+      state.lczLayer = "off";
+      state.metric = metric;
+      updateMetricButtons();
+      updateMapStyle();
+      updateLegend();
+      refreshWeatherSeries();
+    });
+  });
   els.energyMetricSelect?.addEventListener("change", () => {
     if (!els.energyMetricSelect.value) return;
     state.lczLayer = "off";
@@ -2616,6 +2656,8 @@ function bindEvents() {
       const groupId = input.dataset.regionGroup;
       if (groupId) {
         const ids = regionIdsForGroup(groupId);
+        if (input.checked) state.selectedMajorRegionIds.add(groupId);
+        else state.selectedMajorRegionIds.delete(groupId);
         ids.forEach((id) => {
           if (input.checked) state.selectedRegionIds.add(id);
           else state.selectedRegionIds.delete(id);
@@ -2628,8 +2670,11 @@ function bindEvents() {
         return;
       }
       const id = input.dataset.regionId || input.value;
-      if (input.checked) state.selectedRegionIds.add(id);
-      else state.selectedRegionIds.delete(id);
+      if (input.checked) {
+        state.selectedRegionIds.add(id);
+        const feature = regionFeatures().find((feature) => regionId(feature) === id);
+        if (feature) state.selectedMajorRegionIds.add(regionGroupId(feature));
+      } else state.selectedRegionIds.delete(id);
       syncRegionCheckboxes();
       renderBuildingTypeFilter();
       applyRegionFilter();
@@ -2639,7 +2684,11 @@ function bindEvents() {
   });
   (els.regionSelectAllButtons || []).forEach((button) => {
     button.addEventListener("click", () => {
-      state.selectedRegionIds = new Set(regionIds());
+      if (button.dataset.regionSelectAll !== "planning") {
+        state.selectedMajorRegionIds = new Set(regionGroups().map((group) => group.id));
+      }
+      state.selectedRegionIds = new Set(regionFeatures()
+        .filter((feature) => state.selectedMajorRegionIds.has(regionGroupId(feature))).map(regionId));
       syncRegionCheckboxes();
       renderBuildingTypeFilter();
       applyRegionFilter();
@@ -2649,6 +2698,7 @@ function bindEvents() {
   (els.regionClearAllButtons || []).forEach((button) => {
     button.addEventListener("click", () => {
       state.selectedRegionIds = new Set();
+      if (button.dataset.regionClearAll !== "planning") state.selectedMajorRegionIds.clear();
       syncRegionCheckboxes();
       renderBuildingTypeFilter();
       applyRegionFilter();

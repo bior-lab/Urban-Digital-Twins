@@ -146,7 +146,7 @@
           </div>
 
           <div class="control-block what-how-section">
-            <span class="control-label">What &amp; How:</span>
+            <span class="control-label">What &amp; how:</span>
             <p class="summary-text">
               Building footprints are classified, linked to morphology and measured EUI, and aggregated to 500 m
               districts for cross-scale exploration.
@@ -171,7 +171,7 @@
           </div>
 
           <div class="control-block lcz-analysis-block">
-            <span class="control-label">Local Climate Zone (LCZ) analysis</span>
+            <span class="control-label">Local climate zone (LCZ) analysis</span>
             <div id="lczLayerButtons" class="segmented compact lcz-layer-buttons" aria-label="LCZ analysis layer">
               <button type="button" data-lcz-layer="off">Off</button>
               <button type="button" data-lcz-layer="raw">100 m LCZ</button>
@@ -228,7 +228,7 @@
           </div>
 
           <div class="control-block what-how-section">
-            <span class="control-label">What &amp; How:</span>
+            <span class="control-label">What &amp; how:</span>
             <p class="summary-text">
               Weather Research and Forecasting (WRF) representative-week outputs are converted to hourly 500 m fields for temperature, wind, humidity, and
               solar radiation.
@@ -294,26 +294,17 @@
           </div>
 
           <div class="control-block what-how-section">
-            <span class="control-label">What &amp; How:</span>
+            <span class="control-label">What &amp; how:</span>
             <p class="summary-text">
               Weekly simulations compare non-microclimate and WRF-informed cases at building and 500 m district scales.
             </p>
           </div>
 
-          <div class="control-block">
-            <label class="control-label" for="layerModeEnergy">Step 1: Select Spatial Resolution</label>
-            <select id="layerModeEnergy">
-              <option value="buildings" selected>Individual buildings</option>
-              <option value="grid">Aggregated grid cells (500 m × 500 m)</option>
-              <option value="combined">Individual buildings + aggregated grid cells</option>
-            </select>
-          </div>
-
           <div class="control-block region-filter-block">
-            <span class="control-label">Step 2: Select Areas</span>
+            <span class="control-label">Step 1: Select major regions</span>
             <details id="regionFilterDropdownEnergy" class="region-filter-dropdown">
               <summary>
-                <span id="regionFilterSummaryEnergy" data-region-filter-summary>All regions</span>
+                <span id="regionFilterSummaryEnergy" data-region-filter-summary="major">All regions</span>
                 <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
               </summary>
               <div class="region-filter-menu">
@@ -321,13 +312,30 @@
                   <button id="regionSelectAllEnergy" type="button" data-region-select-all>Select all</button>
                   <button id="regionClearAllEnergy" type="button" data-region-clear-all>Clear</button>
                 </div>
-                <div id="regionFilterListEnergy" class="region-filter-list" data-region-filter-list></div>
+                <div id="regionFilterListEnergy" class="region-filter-list" data-region-filter-list="major"></div>
+              </div>
+            </details>
+          </div>
+
+          <div class="control-block region-filter-block">
+            <span class="control-label">Step 2: Select planning areas within major regions</span>
+            <details class="region-filter-dropdown">
+              <summary>
+                <span data-region-filter-summary="planning">All planning areas</span>
+                <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+              </summary>
+              <div class="region-filter-menu">
+                <div class="region-filter-actions">
+                  <button type="button" data-region-select-all="planning">Select all</button>
+                  <button type="button" data-region-clear-all="planning">Clear</button>
+                </div>
+                <div class="region-filter-list" data-region-filter-list="planning"></div>
               </div>
             </details>
           </div>
 
           <div class="control-block building-type-filter-block">
-            <span class="control-label">Step 3: Select Building Types</span>
+            <span class="control-label">Step 3: Select building types</span>
             <details id="buildingTypeFilterDropdownEnergy" class="region-filter-dropdown building-type-filter-dropdown">
               <summary>
                 <span id="buildingTypeFilterSummaryEnergy">All building types</span>
@@ -344,13 +352,28 @@
           </div>
 
           <div class="control-block metric-block">
-            <label class="control-label" for="energyMetricSelect">Energy Use (weekly simulation data, kWh/week)</label>
-            <select id="energyMetricSelect"></select>
+            <span class="control-label">Step 4: Select what type of energy use to visualize</span>
+            <label class="control-label energy-source-label">
+              <input type="radio" name="energySource" value="simulation" checked />
+              <span>Simulated weekly energy use (weekly simulation data, kWh/week)</span>
+            </label>
+            <select id="energyMetricSelect" aria-label="Weekly simulation metric"></select>
           </div>
 
           <div class="control-block metric-block">
-            <span class="control-label">Energy use (measured yearly data from BCA building energy benchmarks, kWh/m²/year)</span>
-            <div id="measuredEnergyButtons" class="button-stack"></div>
+            <label class="control-label energy-source-label">
+              <input type="radio" name="energySource" value="measured" />
+              <span>Measured yearly EUI (2023, measured yearly data from BCA building energy benchmarks, kWh/m²/year)</span>
+            </label>
+          </div>
+
+          <div class="control-block">
+            <label class="control-label" for="layerModeEnergy">Step 5: Select spatial resolution</label>
+            <select id="layerModeEnergy">
+              <option value="buildings" selected>Individual buildings</option>
+              <option value="grid">Aggregated grid cells (500 m × 500 m)</option>
+              <option value="combined">Individual buildings + aggregated grid cells</option>
+            </select>
           </div>
 
           <div class="control-block">

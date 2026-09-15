@@ -465,11 +465,11 @@ select:focus {
 .control-label {
   display: block;
   margin-bottom: 7px;
-  color: #526173;
+  color: var(--nus-blue);
   font-size: 12px;
   font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .control-label-row {
@@ -607,12 +607,16 @@ select:focus {
   border-top: 1px solid rgba(0, 61, 124, 0.1);
 }
 
+.region-filter-option[hidden] {
+  display: none;
+}
+
 .region-filter-section-title {
-  color: var(--muted);
+  color: var(--nus-blue);
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
 .region-filter-option {
@@ -1369,4 +1373,23 @@ input[type="range"] {
 .guide-note a:hover {
   color: #003d7c;
   text-decoration: underline;
+}
+
+.energy-source-label {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.energy-source-label input[type="radio"] {
+  width: auto;
+  margin: 0;
+  flex: 0 0 auto;
+  accent-color: var(--nus-blue);
+}
+
+#energyMetricSelect:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
