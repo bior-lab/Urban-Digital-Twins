@@ -23,7 +23,7 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     />
 
-    <link rel="stylesheet" href="src/styles.css?v=20260512-controls-v1" />
+    <link rel="stylesheet" href="src/styles.css?v=20260915-map-view-v1" />
 
     <style>
       #resetView {
@@ -66,9 +66,7 @@
 
           <a
             class="app-nav-item nav-child nav-guide"
-            href="./guide/"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="#user-guide"
           >
             <span class="nav-icon"><i class="fa-solid fa-book-open"></i></span>
             <span>User guide</span>
@@ -124,7 +122,7 @@
 
             <p class="guide-note">
               For more information, please check the
-              <a href="./guide/" target="_blank" rel="noopener noreferrer">User guide</a>.
+              <a href="#user-guide" data-open-guide>User guide</a>.
             </p>
           </div>
 
@@ -400,6 +398,11 @@
             </label>
           </div>
 
+        </div>
+      </section>
+
+      <section class="tab-panel guide-tab" id="user-guide" aria-label="User guide">
+        <iframe title="Urban Digital Twins user guide" data-src="./guide/" id="userGuideFrame"></iframe>
       </section>
 
       <section class="panel panel-right" aria-label="Legend and selected feature">
@@ -460,9 +463,22 @@
     </script>
 
     <script src="src/config.js?v=20260509-weekly-energy-tilesets"></script>
-    <script src="src/app.js?v=20260517-energy-filter-v1"></script>
+    <script src="src/app.js?v=20260915-map-view-v1"></script>
 
     <script>
+
+      let previousMapTab = "about";
+      document.querySelector("[data-open-guide]")?.addEventListener("click", (event) => {
+        event.preventDefault();
+        document.querySelector('.nav-guide').click();
+      });
+      const guideFrame = document.getElementById("userGuideFrame");
+      guideFrame.addEventListener("load", () => {
+        guideFrame.contentDocument?.querySelector(".back-link")?.addEventListener("click", (event) => {
+          event.preventDefault();
+          document.querySelector(`.app-nav-item[href="#${previousMapTab}"]`)?.click();
+        });
+      });
 
       document.querySelectorAll(".app-nav-item[href^='#']").forEach((item) => {
         item.addEventListener("click", (event) => {
@@ -483,6 +499,14 @@
 
           item.classList.add("active");
           targetPanel.classList.add("active");
+          const showingGuide = targetId === "user-guide";
+          document.getElementById("app").classList.toggle("showing-guide", showingGuide);
+          if (showingGuide) {
+            if (!guideFrame.hasAttribute("src")) guideFrame.src = guideFrame.dataset.src;
+          } else {
+            previousMapTab = targetId;
+            requestAnimationFrame(() => getBiorMap()?.resize());
+          }
 
           if (targetId === "buildings") {
             setTimeout(activateBuildingMode, 100);

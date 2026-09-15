@@ -2520,6 +2520,52 @@ async function loadData() {
   state.buildings = await buildingResponse.json();
 }
 
+class MapViewControl {
+  onAdd(map) {
+    this.map = map;
+    this.container = document.createElement("div");
+    this.container.className = "mapboxgl-ctrl mapboxgl-ctrl-group map-view-control";
+    this.container.setAttribute("role", "group");
+    this.container.setAttribute("aria-label", "Map rotation and tilt");
+    const addButton = (text, label, action) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = text;
+      button.title = label;
+      button.setAttribute("aria-label", label);
+      button.addEventListener("click", action);
+      this.container.appendChild(button);
+      return button;
+    };
+    addButton("↶", "Rotate left 30°", () => {
+      map.easeTo({ bearing: map.getBearing() - 30, duration: 300 });
+    });
+    addButton("↷", "Rotate right 30°", () => {
+      map.easeTo({ bearing: map.getBearing() + 30, duration: 300 });
+    });
+    this.pitchButton = addButton("", "", () => {
+      const pitch = [0, 30, 60].find((value) => value > map.getPitch() + 1) ?? 0;
+      map.easeTo({ pitch, duration: 400 });
+    });
+    this.updatePitch = () => {
+      const pitch = Math.round(map.getPitch());
+      this.pitchButton.textContent = `${pitch}°`;
+      const label = `Tilt: ${pitch}°. Click to cycle through 0°, 30°, and 60°`;
+      this.pitchButton.title = label;
+      this.pitchButton.setAttribute("aria-label", label);
+    };
+    map.on("pitch", this.updatePitch);
+    this.updatePitch();
+    return this.container;
+  }
+
+  onRemove() {
+    this.map.off("pitch", this.updatePitch);
+    this.container.remove();
+    this.map = null;
+  }
+}
+
 function initMap(token) {
   mapboxgl.accessToken = token;
   state.map = new mapboxgl.Map({
@@ -2546,6 +2592,7 @@ function initMap(token) {
   );
 
   state.map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), "top-right");
+  state.map.addControl(new MapViewControl(), "top-right");
   state.map.addControl(new mapboxgl.ScaleControl({ maxWidth: 120, unit: "metric" }), "bottom-left");
 
   state.map.on("load", async () => {

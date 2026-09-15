@@ -1393,3 +1393,50 @@ input[type="range"] {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.map-view-control button {
+  color: var(--nus-blue);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.map-view-control button:last-child {
+  font-size: 12px;
+}
+
+.map-view-control button:focus-visible {
+  outline: 2px solid var(--nus-blue);
+  outline-offset: 2px;
+}
+
+.guide-tab {
+  position: fixed;
+  inset: 0 0 0 var(--nav-width);
+  z-index: 7;
+  background: #f5f7fb;
+}
+
+.guide-tab iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.showing-guide .panel,
+.showing-guide #map,
+.showing-guide .token-dialog,
+.showing-guide .loading {
+  visibility: hidden;
+}
+
+@media (max-width: 860px) {
+  .guide-tab {
+    inset: 64px 0 0;
+  }
+
+  .showing-guide .panel,
+  .showing-guide #map {
+    display: none;
+  }
+}
