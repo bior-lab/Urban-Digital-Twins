@@ -700,11 +700,8 @@ function renderRegionFilter() {
     updateRegionFilterSummary();
     return;
   }
-  const defaultAreas = features.filter((feature) =>
-    regionGroupId(feature) === "Central Region" && regionId(feature) === "BM"
-  );
-  state.selectedRegionIds = new Set(defaultAreas.map(regionId));
-  state.selectedMajorRegionIds = new Set(defaultAreas.map(regionGroupId));
+  state.selectedRegionIds = new Set(features.map(regionId));
+  state.selectedMajorRegionIds = new Set(regionGroups().map((group) => group.id));
   const groupMarkup = regionGroups()
     .map((group) => {
       return `
