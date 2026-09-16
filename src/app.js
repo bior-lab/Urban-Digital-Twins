@@ -1,5 +1,11 @@
 const CONFIG = window.SG_ENERGY_MAP_CONFIG || {};
 const TOKEN_STORAGE_KEY = "sg-energy-mapbox-token";
+const DEFAULT_MAP_VIEW = {
+  center: [103.82, 1.29],
+  zoom: 14.1,
+  pitch: 50,
+  bearing: -28
+};
 
 const PERIODS = {
   hot: { label: "Relatively hot season (May)", shortLabel: "Relatively hot season (May)" },
@@ -2573,6 +2579,18 @@ class MapViewControl {
   }
 }
 
+function resetTabMapView(tabId) {
+  if (!state.map) return;
+  state.map.stop();
+  if (tabId === "microclimate") {
+    state.map.fitBounds([[103.59, 1.15], [104.1, 1.48]], {
+      padding: 40, pitch: 0, bearing: 0, duration: 900
+    });
+  } else if (["about", "buildings", "energy"].includes(tabId)) {
+    state.map.flyTo({ ...DEFAULT_MAP_VIEW, padding: 0, duration: 900 });
+  }
+}
+
 function initMap(token) {
   mapboxgl.accessToken = token;
   state.map = new mapboxgl.Map({
@@ -2580,10 +2598,7 @@ function initMap(token) {
     style: CONFIG.styleUrl || "mapbox://styles/mapbox/light-v11",
 
     // More detailed 3D view
-    center: [103.82, 1.29],
-    zoom: 14.1,
-    pitch: 50,
-    bearing: -28,
+    ...DEFAULT_MAP_VIEW,
 
     antialias: true,
     attributionControl: false
@@ -2622,9 +2637,6 @@ function bindEvents() {
       const isMicroclimate = item.getAttribute("href") === "#microclimate";
       state.weatherAutoPlay = isMicroclimate;
       if (isMicroclimate) {
-        state.map?.fitBounds([[103.59, 1.15], [104.1, 1.48]], {
-          padding: 40, pitch: 0, bearing: 0, duration: 900
-        });
         startWeatherPlayback();
       } else {
         stopWeatherPlayback();

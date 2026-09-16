@@ -463,7 +463,7 @@
     </script>
 
     <script src="src/config.js?v=20260509-weekly-energy-tilesets"></script>
-    <script src="src/app.js?v=20260915-map-view-v2"></script>
+    <script src="src/app.js?v=20260916-tab-default-view"></script>
 
     <script>
 
@@ -505,7 +505,11 @@
             if (!guideFrame.hasAttribute("src")) guideFrame.src = guideFrame.dataset.src;
           } else {
             previousMapTab = targetId;
-            requestAnimationFrame(() => getBiorMap()?.resize());
+            requestAnimationFrame(() => {
+              if (!targetPanel.classList.contains("active")) return;
+              getBiorMap()?.resize();
+              resetTabMapView(targetId);
+            });
           }
 
           if (targetId === "buildings") {
