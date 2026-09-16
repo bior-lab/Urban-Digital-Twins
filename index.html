@@ -512,19 +512,25 @@
             });
           }
 
-          if (targetId === "buildings") {
-            setTimeout(activateBuildingMode, 100);
-            setTimeout(activateBuildingTypeMetric, 200);
+          const runForActiveTab = (callback, delay) => {
+            setTimeout(() => {
+              if (targetPanel.classList.contains("active")) callback();
+            }, delay);
+          };
+
+          if (targetId === "about" || targetId === "buildings") {
+            runForActiveTab(activateBuildingMode, 100);
+            runForActiveTab(activateBuildingTypeMetric, 200);
           }
 
           if (targetId === "microclimate") {
-            setTimeout(activateMicroclimateGridMode, 100);
-            setTimeout(setupMicroclimateDefaults, 250);
+            runForActiveTab(activateMicroclimateGridMode, 100);
+            runForActiveTab(setupMicroclimateDefaults, 250);
           }
 
           if (targetId === "energy") {
-            setTimeout(activateEnergyBuildingMode, 100);
-            setTimeout(activateFirstEnergyMetric, 200);
+            runForActiveTab(activateEnergyBuildingMode, 100);
+            runForActiveTab(activateFirstEnergyMetric, 200);
           }
         });
       });
